@@ -1,0 +1,32 @@
+.dir {
+  cursor: pointer;
+}
+
+ul {
+  list-style-type: none;
+}
+
+ul.root {
+  margin: 0;
+  padding: 0;
+}
+
+ul.nested {
+  margin-top: 5px;
+}
+
+ul li {
+  margin-bottom: 5px;
+}
+
+ul li:last-child {
+  margin-bottom: 0;
+}
+
+.nested {
+  display: none;
+}
+
+.active {
+  display: block;
+}

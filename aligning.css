@@ -1,0 +1,23 @@
+.vertical {
+  display: flex;
+  flex-direction: column;
+}
+
+.horizontal {
+  display: flex;
+  flex-direction: row;
+}
+
+.vertical.center,
+.horizontal.center {
+  align-items: center;
+  justify-content: center;
+}
+
+.inlineSpread {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
+  gap: 50px;
+  align-items: center;
+}

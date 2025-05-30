@@ -1,0 +1,39 @@
+i.icon::before {
+  font-style: normal;
+  transition-duration: 0.2s;
+
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 0px;
+  width: 2ch;
+  height: 2ch;
+}
+
+i.icon-caret::before {
+  content: '\2B9E';
+  color: black;
+}
+
+i.icon-caret.down::before {
+  transform: rotate(90deg);
+}
+
+i.icon-folder::before {
+  content: '\1F4C1';
+}
+
+i.icon-folder.down::before {
+  content: '\1F4C2';
+}
+
+i.icon-trash::before {
+  content: '🗑️';
+  font-size: 120%;
+
+  border: solid #222 2px;
+  padding: 3px;
+  background-color: #3f3f3f;
+  border-radius: 10px;
+}
