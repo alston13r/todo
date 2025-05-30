@@ -1,23 +1,23 @@
-/** @type {Map<Item, Object>} */
-const itemToButtonsMap = new Map()
+/** @type {Map<Task, Object>} */
+const taskToButtonsMap = new Map()
 
 const buttonDistanceConstant = 2
 const buttonRemovalCountdown = 0.2
 
 /**
- * @param {Item} item 
+ * @param {Task} task 
  * @param {boolean} immediate
  */
-function markCreationButtonsForRemoval(item, immediate = false) {
-  if (item === null) return
-  if (!itemToButtonsMap.has(item)) return
+function markCreationButtonsForRemoval(task, immediate = false) {
+  if (task === null) return
+  if (!taskToButtonsMap.has(task)) return
 
-  const val = itemToButtonsMap.get(item)
+  const val = taskToButtonsMap.get(task)
   if (immediate === true) {
     val.topButton.remove()
     val.bottomButton.remove()
     val.rightButton.remove()
-    itemToButtonsMap.delete(item)
+    taskToButtonsMap.delete(task)
     return
   }
 
@@ -27,20 +27,20 @@ function markCreationButtonsForRemoval(item, immediate = false) {
     val.topButton.remove()
     val.bottomButton.remove()
     val.rightButton.remove()
-    itemToButtonsMap.delete(item)
+    taskToButtonsMap.delete(task)
   }, buttonRemovalCountdown * 1000)
 }
 
 /**
- * @param {Item} item 
+ * @param {Task} task 
  */
-function addCreationButtonsToItem(item) {
-  if (itemToButtonsMap.has(item)) {
+function addCreationButtonsToTask(task) {
+  if (taskToButtonsMap.has(task)) {
     // ensure not marked for removal
-    clearTimeout(itemToButtonsMap.get(item).timeout)
+    clearTimeout(taskToButtonsMap.get(task).timeout)
     return
   }
-  if (!item.builtDom) return
+  if (!task.builtDom) return
 
   const topButton = document.createElement('button')
   topButton.classList.add('is-plus')
@@ -54,13 +54,13 @@ function addCreationButtonsToItem(item) {
   rightButton.classList.add('is-plus')
   rightButton.innerText = '+'
 
-  item.dom.container.append(topButton, bottomButton, rightButton)
+  task.dom.container.append(topButton, bottomButton, rightButton)
 
   topButton.addEventListener('click', () => {
     promptForNewTask(ret => {
       if (ret.valid) {
-        const newTask = new Item(ret.trimmed)
-        item.addItemAbove(newTask)
+        const newTask = new Task(ret.trimmed)
+        task.addTaskAbove(newTask)
       }
     })
   })
@@ -68,8 +68,8 @@ function addCreationButtonsToItem(item) {
   bottomButton.addEventListener('click', () => {
     promptForNewTask(ret => {
       if (ret.valid) {
-        const newTask = new Item(ret.trimmed)
-        item.addItemBelow(newTask)
+        const newTask = new Task(ret.trimmed)
+        task.addTaskBelow(newTask)
       }
     })
   })
@@ -77,13 +77,13 @@ function addCreationButtonsToItem(item) {
   rightButton.addEventListener('click', () => {
     promptForNewTask(ret => {
       if (ret.valid) {
-        const newTask = new Item(ret.trimmed)
-        item.addItem(newTask)
+        const newTask = new Task(ret.trimmed)
+        task.addTask(newTask)
       }
     })
   })
 
-  const spanBounds = item.dom.span.getBoundingClientRect()
+  const spanBounds = task.dom.span.getBoundingClientRect()
 
   topButton.style.left = '10px'
   topButton.style.top = `${-buttonDistanceConstant}px`
@@ -95,7 +95,7 @@ function addCreationButtonsToItem(item) {
   rightButton.style.left = `${spanBounds.width + 5}px`
   rightButton.style.top = `${spanBounds.height / 2 - rightBounds.height / 2}px`
 
-  itemToButtonsMap.set(item, {
+  taskToButtonsMap.set(task, {
     topButton, bottomButton, rightButton,
     marked: false
   })
@@ -148,29 +148,29 @@ function promptForNewTask(callback) {
   input.focus()
 }
 
-class Item {
-  /** @type {Item} */
+class Task {
+  /** @type {Task} */
   static _CurrentHover = null
 
-  /** @param {Item} */
+  /** @param {Task} */
   static set CurrentHover(v) {
-    if (Item._CurrentHover !== v) {
-      const oldHover = Item._CurrentHover
-      Item._CurrentHover = v
+    if (Task._CurrentHover !== v) {
+      const oldHover = Task._CurrentHover
+      Task._CurrentHover = v
       if (v === null) {
         // start timer for old add buttons
         markCreationButtonsForRemoval(oldHover)
       }
-      else if (v instanceof Item) {
+      else if (v instanceof Task) {
         // start timer for old add buttons
         markCreationButtonsForRemoval(oldHover)
         // show add buttons
-        addCreationButtonsToItem(v)
+        addCreationButtonsToTask(v)
       }
     }
   }
 
-  /** @returns {Item} */
+  /** @returns {Task} */
   static get CurrentHover() {
     return this._CurrentHover
   }
@@ -183,10 +183,10 @@ class Item {
 
     this.builtDom = false
 
-    /** @type {Item[]} */
+    /** @type {Task[]} */
     this.children = []
 
-    /** @type {Item} */
+    /** @type {Task} */
     this.parent = null
 
     this._extended = false
@@ -227,55 +227,55 @@ class Item {
   }
 
   /**
-   * @param {Item} item 
+   * @param {Task} task 
    * @param {boolean} bubble
    * @param {boolean} save
    */
-  addItem(item, bubble = true, save = true) {
-    item.removeFromParent(false)
-    this.children.push(item)
-    item.parent = this
+  addTask(task, bubble = true, save = true) {
+    task.removeFromParent(false)
+    this.children.push(task)
+    task.parent = this
 
-    this.dom.ul.appendChild(item.createDom())
+    this.dom.ul.appendChild(task.createDom())
     this.extend(bubble, false)
 
     if (save === true) TaskIO.Save()
   }
 
   /**
-   * @param {Item} item 
+   * @param {Task} task 
    * @param {boolean} save
    */
-  addItemAbove(item, save = true) {
-    item.removeFromParent(false)
+  addTaskAbove(task, save = true) {
+    task.removeFromParent(false)
 
     // at the root
-    if (this.parent === null) return addTaskToRootAboveReference(item, this)
+    if (this.parent === null) return addTaskToRootAboveReference(task, this)
 
     const siblingIndex = this.parent.children.indexOf(this)
-    this.parent.children.splice(siblingIndex, 0, item)
-    item.parent = this.parent
+    this.parent.children.splice(siblingIndex, 0, task)
+    task.parent = this.parent
 
-    this.createDom().before(item.createDom())
+    this.createDom().before(task.createDom())
 
     if (save === true) TaskIO.Save()
   }
 
   /**
-   * @param {Item} item 
+   * @param {Task} task 
    * @param {boolean} save
    */
-  addItemBelow(item, save = true) {
-    item.removeFromParent(false)
+  addTaskBelow(task, save = true) {
+    task.removeFromParent(false)
 
     // at the root
-    if (this.parent === null) return addTaskToRootBelowReference(item, this)
+    if (this.parent === null) return addTaskToRootBelowReference(task, this)
 
     const siblingIndex = this.parent.children.indexOf(this) + 1
-    this.parent.children.splice(siblingIndex, 0, item)
-    item.parent = this.parent
+    this.parent.children.splice(siblingIndex, 0, task)
+    task.parent = this.parent
 
-    this.createDom().after(item.createDom())
+    this.createDom().after(task.createDom())
 
     if (save === true) TaskIO.Save()
   }
@@ -338,11 +338,11 @@ class Item {
     const container = document.createElement('li')
     container.addEventListener('mouseover', e => {
       e.stopPropagation()
-      Item.CurrentHover = this
+      Task.CurrentHover = this
     })
     container.addEventListener('mouseleave', e => {
       e.stopPropagation()
-      if (Item.CurrentHover === this) Item.CurrentHover = null
+      if (Task.CurrentHover === this) Task.CurrentHover = null
     })
 
     const container2 = document.createElement('div')
@@ -444,52 +444,52 @@ class Item {
 
   /**
    * @param {{name: string, selected: number, extended?: boolean, children?: Array}} obj 
-   * @returns {Item}
+   * @returns {Task}
    */
   static FromSerial(obj) {
-    const thisItem = new Item(obj.name)
-    thisItem.createDom({ initialSelection: obj.selected })
+    const thisTask = new Task(obj.name)
+    thisTask.createDom({ initialSelection: obj.selected })
 
     if ('children' in obj) {
       for (const child of obj.children) {
-        const childItem = Item.FromSerial(child)
-        thisItem.addItem(childItem, false, false)
+        const childTask = Task.FromSerial(child)
+        thisTask.addTask(childTask, false, false)
       }
-      thisItem.setExtended(obj.extended, false)
+      thisTask.setExtended(obj.extended, false)
     }
 
-    return thisItem
+    return thisTask
   }
 }
 
 const root = document.querySelector('.root')
 
 /**
- * @param {Item} item 
+ * @param {Task} task 
  */
-function addTaskToRoot(item) {
-  root.appendChild(item.createDom())
+function addTaskToRoot(task) {
+  root.appendChild(task.createDom())
 }
 
 /**
- * @param {Item} item 
- * @param {Item} reference 
+ * @param {Task} task 
+ * @param {Task} reference 
  * @param {boolean} save
  */
-function addTaskToRootAboveReference(item, reference, save = true) {
-  item.removeFromParent(false)
-  root.insertBefore(item.createDom(), reference.createDom())
+function addTaskToRootAboveReference(task, reference, save = true) {
+  task.removeFromParent(false)
+  root.insertBefore(task.createDom(), reference.createDom())
   if (save === true) TaskIO.Save()
 }
 
 /**
- * @param {Item} item 
- * @param {Item} reference 
+ * @param {Task} task 
+ * @param {Task} reference 
  * @param {boolean} save
  */
-function addTaskToRootBelowReference(item, reference, save = true) {
-  item.removeFromParent(false)
-  reference.createDom().after(item.createDom())
+function addTaskToRootBelowReference(task, reference, save = true) {
+  task.removeFromParent(false)
+  reference.createDom().after(task.createDom())
   if (save === true) TaskIO.Save()
 }
 
@@ -503,7 +503,7 @@ function addCreateButtonToRoot() {
   button.addEventListener('click', () => {
     promptForNewTask(ret => {
       if (ret.valid) {
-        const newTask = new Item(ret.trimmed)
+        const newTask = new Task(ret.trimmed)
         addTaskToRoot(newTask)
         button.remove()
         TaskIO.Save()

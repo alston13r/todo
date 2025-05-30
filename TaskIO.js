@@ -18,7 +18,7 @@ class TaskIO {
       if (obj.root.length === 0) return
 
       for (const itemSerial of obj.root) {
-        addTaskToRoot(Item.FromSerial(itemSerial))
+        addTaskToRoot(Task.FromSerial(itemSerial))
       }
     }
   }
