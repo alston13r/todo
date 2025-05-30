@@ -107,7 +107,8 @@ class SleekInput {
       this.updateWidth(input.value)
     })
     input.value = initialValue
-    this.updateWidth(initialValue)
+    if (input.value.length === 0) this.updateWidth(placeholder)
+    else this.updateWidth(initialValue)
 
     this.domElement = input
     this.builtDom = true
@@ -128,8 +129,6 @@ class SleekInput {
     span.textContent = input
     const width = span.offsetWidth
     this.domElement.style.width = width + 'px'
-
-    console.log(width)
 
     span.remove()
   }
@@ -281,10 +280,8 @@ function promptForTaskName(callback, placeholder = '') {
   aligner.classList.add('vertical', 'center')
   background.appendChild(aligner)
 
-  const input = document.createElement('input')
-  input.type = 'text'
-  input.classList.add('sleek')
-  input.placeholder = placeholder
+  const sleek = new SleekInput()
+  const input = sleek.createDom('', placeholder)
   input.addEventListener('change', () => {
     if (!removed) {
       removed = true
@@ -362,6 +359,9 @@ class Task {
    */
   rename(newName, save = true) {
     this.name = newName
+    if (this.builtDom) {
+      this.dom.text.nodeValue = newName
+    }
 
     if (save === true) TaskIO.Save()
   }
