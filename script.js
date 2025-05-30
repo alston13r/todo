@@ -1,3 +1,162 @@
+/** @type {HTMLElement} */
+let ctxMenu = null
+const contextMenuRemovalCountdown = 0.2
+let contextMenuRemovalNumber = null
+let contextMenuMarked = false
+let contextMenuCreatedOn = null
+
+function destroyContextMenu() {
+  if (ctxMenu === null) return
+  ctxMenu.remove()
+  ctxMenu = null
+  contextMenuRemovalNumber = null
+  contextMenuMarked = false
+  contextMenuCreatedOn = null
+}
+
+function markContextMenuForRemoval() {
+  if (ctxMenu === null) return
+  if (contextMenuMarked) return
+
+  contextMenuRemovalNumber = setTimeout(() => {
+    destroyContextMenu()
+  }, contextMenuRemovalCountdown * 1000)
+
+  contextMenuMarked = true
+}
+
+document.addEventListener('click', e => {
+  if (ctxMenu === null) return
+  if (!ctxMenu.contains(e.target)) markContextMenuForRemoval()
+})
+window.addEventListener('contextmenu', e => {
+  if (ctxMenu === null) return
+  if (contextMenuCreatedOn === e.target) return
+  if (!ctxMenu.contains(e.target)) markContextMenuForRemoval()
+})
+
+/**
+ * @param {PointerEvent} e 
+ * @param {Task} task
+ */
+function createContextMenu(e, task) {
+  destroyContextMenu()
+
+  const menu = document.createElement('ul')
+  ctxMenu = menu
+  contextMenuCreatedOn = e.target
+  menu.classList.add('ctx-menu')
+  menu.style.left = `${e.pageX - 7}px`
+  menu.style.top = `${e.pageY - 7}px`
+
+  const line = document.createElement('li')
+  const lineSpan = document.createElement('span')
+
+  line.appendChild(lineSpan)
+  lineSpan.innerText = 'Rename'
+  lineSpan.addEventListener('click', () => {
+    promptForTaskName(ret => {
+      if (ret.valid) {
+        task.rename(ret.trimmed)
+      }
+    }, task.name)
+    markContextMenuForRemoval()
+  })
+
+  menu.appendChild(line)
+
+  menu.addEventListener('mouseleave', () => {
+    markContextMenuForRemoval()
+  })
+  menu.addEventListener('contextmenu', e => {
+    e.preventDefault()
+  })
+
+  document.body.appendChild(menu)
+}
+
+
+
+
+
+
+
+class SleekInput {
+  constructor() {
+    const span = document.createElement('span')
+    span.style.whiteSpace = 'pre'
+    span.style.visibility = 'hidden'
+
+    this.tempSpan = span
+
+    this.builtDom = false
+  }
+
+  /**
+   * @param {string} initialValue
+   * @param {string} placeholder 
+   * @returns {HTMLElement}
+   */
+  createDom(initialValue = '', placeholder = '') {
+    const input = document.createElement('input')
+    input.type = 'text'
+    input.classList.add('sleek')
+    input.placeholder = placeholder
+
+    input.addEventListener('input', () => {
+      this.updateWidth(input.value)
+    })
+    input.value = initialValue
+    this.updateWidth(initialValue)
+
+    this.domElement = input
+    this.builtDom = true
+
+    return this.domElement
+  }
+
+  /**
+   * @param {string} input 
+   */
+  updateWidth(input) {
+    if (!this.builtDom) return
+
+    const span = this.tempSpan
+    span.style.font = getComputedStyle(this.domElement).font
+    document.body.appendChild(span)
+
+    span.textContent = input
+    const width = span.offsetWidth
+    this.domElement.style.width = width + 'px'
+
+    console.log(width)
+
+    span.remove()
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /** @type {Map<Task, Object>} */
 const taskToButtonsMap = new Map()
 
@@ -57,7 +216,7 @@ function addCreationButtonsToTask(task) {
   task.dom.container.append(topButton, bottomButton, rightButton)
 
   topButton.addEventListener('click', () => {
-    promptForNewTask(ret => {
+    promptForTaskName(ret => {
       if (ret.valid) {
         const newTask = new Task(ret.trimmed)
         task.addTaskAbove(newTask)
@@ -66,7 +225,7 @@ function addCreationButtonsToTask(task) {
   })
 
   bottomButton.addEventListener('click', () => {
-    promptForNewTask(ret => {
+    promptForTaskName(ret => {
       if (ret.valid) {
         const newTask = new Task(ret.trimmed)
         task.addTaskBelow(newTask)
@@ -75,7 +234,7 @@ function addCreationButtonsToTask(task) {
   })
 
   rightButton.addEventListener('click', () => {
-    promptForNewTask(ret => {
+    promptForTaskName(ret => {
       if (ret.valid) {
         const newTask = new Task(ret.trimmed)
         task.addTask(newTask)
@@ -101,7 +260,11 @@ function addCreationButtonsToTask(task) {
   })
 }
 
-function promptForNewTask(callback) {
+/**
+ * @param {(ret: {original: string, trimmed: string, valid: boolean}) => void} callback 
+ * @param {string} placeholder
+ */
+function promptForTaskName(callback, placeholder = '') {
   let removed = false
   let escaped = false
 
@@ -121,6 +284,7 @@ function promptForNewTask(callback) {
   const input = document.createElement('input')
   input.type = 'text'
   input.classList.add('sleek')
+  input.placeholder = placeholder
   input.addEventListener('change', () => {
     if (!removed) {
       removed = true
@@ -190,6 +354,16 @@ class Task {
     this.parent = null
 
     this._extended = false
+  }
+
+  /**
+   * @param {string} newName 
+   * @param {boolean} save
+   */
+  rename(newName, save = true) {
+    this.name = newName
+
+    if (save === true) TaskIO.Save()
   }
 
   /**
@@ -358,6 +532,11 @@ class Task {
       this.setExtended(!this.isExtended())
     })
 
+    span.addEventListener('contextmenu', e => {
+      e.preventDefault()
+      createContextMenu(e, this)
+    })
+
     const ul = document.createElement('ul')
     ul.classList.add('nested')
 
@@ -501,7 +680,7 @@ function addCreateButtonToRoot() {
   root.appendChild(button)
 
   button.addEventListener('click', () => {
-    promptForNewTask(ret => {
+    promptForTaskName(ret => {
       if (ret.valid) {
         const newTask = new Task(ret.trimmed)
         addTaskToRoot(newTask)
