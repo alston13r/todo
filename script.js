@@ -82,7 +82,12 @@ function createContextMenu(e, task) {
 
 
 class SleekInput {
-  constructor() {
+  /**
+   * @param {string} placeholder 
+   */
+  constructor(placeholder = '') {
+    this.placeholder = placeholder
+
     const span = document.createElement('span')
     span.style.whiteSpace = 'pre'
     span.style.visibility = 'hidden'
@@ -94,24 +99,22 @@ class SleekInput {
 
   /**
    * @param {string} initialValue
-   * @param {string} placeholder 
    * @returns {HTMLElement}
    */
-  createDom(initialValue = '', placeholder = '') {
+  createDom(initialValue = '') {
     const input = document.createElement('input')
     input.type = 'text'
     input.classList.add('sleek')
-    input.placeholder = placeholder
+    input.placeholder = this.placeholder
+
+    this.domElement = input
+    this.builtDom = true
 
     input.addEventListener('input', () => {
       this.updateWidth(input.value)
     })
     input.value = initialValue
-    if (input.value.length === 0) this.updateWidth(placeholder)
-    else this.updateWidth(initialValue)
-
-    this.domElement = input
-    this.builtDom = true
+    this.updateWidth(initialValue)
 
     return this.domElement
   }
@@ -126,7 +129,9 @@ class SleekInput {
     span.style.font = getComputedStyle(this.domElement).font
     document.body.appendChild(span)
 
-    span.textContent = input
+    if (input.length === 0) span.textContent = this.placeholder
+    else span.textContent = input
+
     const width = span.offsetWidth
     this.domElement.style.width = width + 'px'
 
@@ -280,8 +285,8 @@ function promptForTaskName(callback, placeholder = '') {
   aligner.classList.add('vertical', 'center')
   background.appendChild(aligner)
 
-  const sleek = new SleekInput()
-  const input = sleek.createDom('', placeholder)
+  const sleek = new SleekInput(placeholder)
+  const input = sleek.createDom()
   input.addEventListener('change', () => {
     if (!removed) {
       removed = true
