@@ -10,7 +10,7 @@ li {
   position: relative;
 }
 
-li span {
+ul.root li span {
   user-select: none;
 
   border: solid #222 2px;
@@ -56,6 +56,18 @@ input[type=text].sleek {
   background-color: #555;
   font-size: inherit;
   outline: none;
+
+  width: 10ch;
+  min-width: 10ch;
+  max-width: 70ch;
+
+  transition:
+    width 0.2s;
+}
+
+input[type=text].sleek::placeholder {
+  color: rgb(124, 124, 124);
+  font-style: italic;
 }
 
 .overlay {
@@ -66,3 +78,36 @@ input[type=text].sleek {
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
 }
+
+ul.ctx-menu {
+  position: absolute;
+  user-select: none;
+  display: block;
+
+  margin: 0;
+  padding: 5px;
+
+  background-color: black;
+  border-radius: 10px;
+}
+
+ul.ctx-menu li {
+  color: #bbb;
+  transition: color 0.2s;
+}
+
+ul.ctx-menu li:hover {
+  color: white;
+}
+
+
+
+/* .ctx-menu .ctx-button {
+  color: #bbb;
+  transition: color 0.5s;
+}
+
+.ctx-menu .ctx-button:hover {
+  color: white;
+  cursor: pointer;
+} */
