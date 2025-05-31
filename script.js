@@ -12,86 +12,174 @@ function createRandomName(prefix = '', suffix = '') {
 
 
 
+class ContextMenuLine {
+  /**
+   * @param {string} text 
+   * @param {(e: MouseEvent) => void} callback 
+   */
+  constructor(text, callback) {
+    const line = document.createElement('li')
+    this.domElement = line
 
+    const lineSpan = document.createElement('span')
 
-
-
-/** @type {HTMLElement} */
-let ctxMenu = null
-const contextMenuRemovalCountdown = 0.2
-let contextMenuRemovalNumber = null
-let contextMenuMarked = false
-let contextMenuCreatedOn = null
-
-function destroyContextMenu() {
-  if (ctxMenu === null) return
-  ctxMenu.remove()
-  ctxMenu = null
-  contextMenuRemovalNumber = null
-  contextMenuMarked = false
-  contextMenuCreatedOn = null
+    line.appendChild(lineSpan)
+    lineSpan.innerText = text
+    lineSpan.addEventListener('click', callback)
+  }
 }
 
-function markContextMenuForRemoval() {
-  if (ctxMenu === null) return
-  if (contextMenuMarked) return
+class ContextMenu {
+  /** @type {ContextMenu} */
+  static Current = null
 
-  contextMenuRemovalNumber = setTimeout(() => {
-    destroyContextMenu()
-  }, contextMenuRemovalCountdown * 1000)
+  /** @type {number} */
+  static CreationOffset = 7
 
-  contextMenuMarked = true
+  /** @type {number} */
+  static RemovalCountdown = 0.2
+
+  /**
+   * @param {PointerEvent} e 
+   * @param {ContextMenuLine[]} lines 
+   */
+  constructor(e, lines) {
+    /** @type {boolean} */
+    this.destroyed = false
+    /** @type {boolean} */
+    this.marked = false
+    /** @type {number} */
+    this.timeout = null
+
+    const menu = document.createElement('ul')
+    this.domElement = menu
+    menu.classList.add('ctx-menu')
+    menu.style.left = `${e.pageX - ContextMenu.CreationOffset}px`
+    menu.style.top = `${e.pageY - ContextMenu.CreationOffset}px`
+
+    this.createdOnTarget = e.target
+
+    for (const line of lines) menu.appendChild(line.domElement)
+
+    menu.addEventListener('mouseleave', () => this.markForRemoval())
+    menu.addEventListener('contextmenu', e => e.preventDefault())
+
+    document.body.appendChild(menu)
+
+    /**
+     * @param {MouseEvent} e 
+     */
+    this.mouseMoveCallback = e => {
+      if (!this.contains(e.target)) this.markForRemoval()
+    }
+    document.addEventListener('mousemove', this.mouseMoveCallback)
+  }
+
+  destroy() {
+    if (this.destroyed) return
+    this.domElement.remove()
+    this.marked = false
+    this.destroyed = true
+    document.removeEventListener('mousemove', this.mouseMoveCallback)
+    if (ContextMenu.Current === this) ContextMenu.Current = null
+  }
+
+  markForRemoval() {
+    if (this.marked || this.destroyed) return
+    this.marked = true
+
+    this.timeout = setTimeout(
+      () => this.destroy(),
+      ContextMenu.RemovalCountdown * 1000
+    )
+  }
+
+  /**
+   * @param {HTMLElement} element 
+   * @returns {boolean}
+   */
+  contains(element) {
+    return this.domElement.contains(element)
+  }
+
+  static DestroyCurrent() {
+    ContextMenu.Current?.destroy()
+  }
+
+  static MarkCurrentForRemoval() {
+    ContextMenu.Current?.markForRemoval()
+  }
+
+  /**
+   * @param {PointerEvent} e 
+   * @param {Task} task 
+   * 
+   * @returns {ContextMenu}
+   */
+  static CreateTaskContextMenu(e, task) {
+    ContextMenu.DestroyCurrent()
+
+    const menu = new ContextMenu(e, [
+      new ContextMenuLine('Rename', () => {
+        promptForTaskName(ret => {
+          if (ret.valid) {
+            task.rename(ret.trimmed)
+          }
+        }, task.name)
+        menu.markForRemoval()
+      })
+    ])
+
+    ContextMenu.Current = menu
+    return menu
+  }
+
+  /** @type {Object} */
+  static Listeners = null
+
+  static SetupEventListeners() {
+    if (ContextMenu.Listeners !== null) return
+
+    /**
+     * @param {MouseEvent} e 
+     */
+    const documentClickCallback = e => {
+      if (ContextMenu.Current === null) return
+      if (!ContextMenu.Current.contains(e.target)) ContextMenu.MarkCurrentForRemoval()
+    }
+
+    /**
+     * @param {PointerEvent} e 
+     */
+    const windowContextmenuCallback = e => {
+      if (ContextMenu.Current === null) return
+      if (ContextMenu.Current.createdOnTarget === e.target) return
+      if (!ContextMenu.Current.contains(e.target)) ContextMenu.MarkCurrentForRemoval()
+    }
+
+    ContextMenu.Listeners = {
+      documentClickCallback,
+      windowContextMenuCallback: windowContextmenuCallback
+    }
+
+    document.addEventListener('click', documentClickCallback)
+    window.addEventListener('contextmenu', windowContextmenuCallback)
+  }
+
+  static DestroyEventListeners() {
+    if (ContextMenu.Listeners === null) return
+
+    document.removeEventListener('click', ContextMenu.Listeners.documentClickCallback)
+    window.removeEventListener('contextmenu', ContextMenu.Listeners.windowContextmenuCallback)
+
+    ContextMenu.Listeners = null
+  }
 }
 
-document.addEventListener('click', e => {
-  if (ctxMenu === null) return
-  if (!ctxMenu.contains(e.target)) markContextMenuForRemoval()
-})
-window.addEventListener('contextmenu', e => {
-  if (ctxMenu === null) return
-  if (contextMenuCreatedOn === e.target) return
-  if (!ctxMenu.contains(e.target)) markContextMenuForRemoval()
-})
+ContextMenu.SetupEventListeners()
 
-/**
- * @param {PointerEvent} e 
- * @param {Task} task
- */
-function createContextMenu(e, task) {
-  destroyContextMenu()
 
-  const menu = document.createElement('ul')
-  ctxMenu = menu
-  contextMenuCreatedOn = e.target
-  menu.classList.add('ctx-menu')
-  menu.style.left = `${e.pageX - 7}px`
-  menu.style.top = `${e.pageY - 7}px`
 
-  const line = document.createElement('li')
-  const lineSpan = document.createElement('span')
-
-  line.appendChild(lineSpan)
-  lineSpan.innerText = 'Rename'
-  lineSpan.addEventListener('click', () => {
-    promptForTaskName(ret => {
-      if (ret.valid) {
-        task.rename(ret.trimmed)
-      }
-    }, task.name)
-    markContextMenuForRemoval()
-  })
-
-  menu.appendChild(line)
-
-  menu.addEventListener('mouseleave', () => {
-    markContextMenuForRemoval()
-  })
-  menu.addEventListener('contextmenu', e => {
-    e.preventDefault()
-  })
-
-  document.body.appendChild(menu)
-}
 
 
 
@@ -482,7 +570,7 @@ class Task {
 
     span.addEventListener('contextmenu', e => {
       e.preventDefault()
-      createContextMenu(e, this)
+      ContextMenu.CreateTaskContextMenu(e, this)
     })
 
     const ul = document.createElement('ul')
