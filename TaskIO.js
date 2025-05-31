@@ -30,6 +30,11 @@ class TaskIO {
   }
 
   static Export() {
+    // check for clipboard permissions
+
+    // if allowed, copy directly
+
+    // else show text area with text already selected
     const data = localStorage.getItem(localStorageKeyName)
     navigator.clipboard.writeText(data ?? '')
       .then(() => console.log('Saved to clipboard'))
@@ -37,6 +42,11 @@ class TaskIO {
   }
 
   static async Import() {
+    // check for clipboard permissions
+
+    // if allowed, copy directly
+
+    // else show empty text area
     try {
       const text = await navigator.clipboard.readText()
       localStorage.setItem(localStorageKeyName, text)
@@ -46,3 +56,17 @@ class TaskIO {
     }
   }
 }
+
+
+
+
+
+// const queryOpts = { name: 'clipboard-read', allowWithoutGesture: false };
+// const permissionStatus = await navigator.permissions.query(queryOpts);
+// // Will be 'granted', 'denied' or 'prompt':
+// console.log(permissionStatus.state);
+
+// // Listen for changes to the permission state
+// permissionStatus.onchange = () => {
+//   console.log(permissionStatus.state);
+// };
