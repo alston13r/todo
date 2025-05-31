@@ -340,6 +340,32 @@ class Task {
   }
 
   /**
+   * @param {boolean} save 
+   */
+  expandAll(save = true) {
+    this.setExpanded(true, false)
+
+    for (const child of this.children) {
+      child.expandAll(false)
+    }
+
+    if (save === true) TaskIO.Save()
+  }
+
+  /**
+   * @param {boolean} save 
+   */
+  collapseAll(save = true) {
+    this.setExpanded(false, false)
+
+    for (const child of this.children) {
+      child.collapseAll(false)
+    }
+
+    if (save === true) TaskIO.Save()
+  }
+
+  /**
    * @returns {boolean}
    */
   isExpanded() {
