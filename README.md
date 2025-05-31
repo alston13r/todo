@@ -4,7 +4,7 @@ Todo App created with HTML, CSS, and JavaScript.
 
 
 ## Demo (GitHub Pages)
-[https://alston13r.github.io/todo/](https://alston13r.github.io/todo/)
+<https://alston13r.github.io/todo/>
 
 
 
@@ -17,7 +17,7 @@ This is my attempt at making a Todo App with some JavaScript. It features a tree
 Since this is plain JavaScript with no modules, you can directly open the `index.html` file in your browser. You can clone this project with:
 `git clone https://github.com/alston13r/todo/`
 
-If you want to use the production version, this is provided on GitHub Pages at [https://alston13r.github.io/todo/](https://alston13r.github.io/todo/).
+If you want to use the production version, this is provided on GitHub Pages at <https://alston13r.github.io/todo/>.
 
 
 
