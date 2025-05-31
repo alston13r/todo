@@ -1,3 +1,7 @@
+i.icon {
+  margin-right: 6px;
+}
+
 i.icon::before {
   font-style: normal;
   transition-duration: 0.2s;
