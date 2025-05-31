@@ -38,8 +38,6 @@ class ContextMenu {
     const menu = document.createElement('ul')
     this.domElement = menu
     menu.classList.add('ctx-menu')
-    // menu.style.left = `${e.pageX - ContextMenu.CreationOffset}px`
-    // menu.style.top = `${e.pageY - ContextMenu.CreationOffset}px`
 
     this.createdOnTarget = e.target
 
@@ -51,17 +49,9 @@ class ContextMenu {
     document.body.appendChild(menu)
     const bounds = menu.getBoundingClientRect()
 
-    if (e.clientX + bounds.width >= window.innerWidth) {
-      menu.style.left = `${e.pageX - bounds.width}px`
-    } else {
-      menu.style.left = `${e.pageX}px`
-    }
+    menu.style.left = e.pageX - (e.clientX + bounds.width >= window.innerWidth ? bounds.width : 0) + 'px'
+    menu.style.top = e.pageY - (e.clientY + bounds.height >= window.innerHeight ? bounds.height : 0) + 'px'
 
-    if (e.clientY + bounds.height >= window.innerHeight) {
-      menu.style.top = `${e.pageY - bounds.height}px`
-    } else {
-      menu.style.top = `${e.pageY}px`
-    }
     menu.style.visibility = 'visible'
   }
 
