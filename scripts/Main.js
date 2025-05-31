@@ -222,7 +222,7 @@ class Task {
     /** @type {Task} */
     this.parent = null
 
-    this._extended = false
+    this._expanded = false
   }
 
   /**
@@ -249,7 +249,7 @@ class Task {
       if (i >= 0) {
         parentChildren.splice(i, 1)
         if (!parent.isFolder()) {
-          parent.setExtended(false, false)
+          parent.setExpanded(false, false)
           parent.hideIcon()
         }
       }
@@ -283,7 +283,7 @@ class Task {
     task.parent = this
 
     this.dom.ul.appendChild(task.createDom())
-    this.extend(bubble, false)
+    this.expand(bubble, false)
 
     if (save === true) TaskIO.Save()
   }
@@ -329,32 +329,32 @@ class Task {
   /**
    * @param {boolean} bubble 
    */
-  extend(bubble = true, save = true) {
-    this.setExtended(true, false)
+  expand(bubble = true, save = true) {
+    this.setExpanded(true, false)
     this.showIcon()
 
     if (bubble === true) {
       if (this.parent === null && save) TaskIO.Save()
-      this.parent?.extend(bubble)
+      this.parent?.expand(bubble)
     } else if (save === true) TaskIO.Save()
   }
 
   /**
    * @returns {boolean}
    */
-  isExtended() {
-    return this._extended
+  isExpanded() {
+    return this._expanded
   }
 
   /**
    * @param {boolean} newValue 
    * @param {boolean} save 
    */
-  setExtended(newValue, save = true) {
+  setExpanded(newValue, save = true) {
     if (!this.builtDom) return
 
     if (!this.isFolder()) {
-      this._extended = false
+      this._expanded = false
       this.hideIcon()
       this.dom.icon.classList.remove('down')
       this.dom.ul.classList.remove('active')
@@ -362,9 +362,9 @@ class Task {
       return
     }
 
-    if (typeof newValue !== 'boolean' || this._extended === newValue) return
-    this._extended = newValue
-    if (this._extended) {
+    if (typeof newValue !== 'boolean' || this._expanded === newValue) return
+    this._expanded = newValue
+    if (this._expanded) {
       this.dom.icon.classList.add('down')
       this.dom.ul.classList.add('active')
     } else {
@@ -402,7 +402,7 @@ class Task {
     span.append(icon, text)
 
     span.addEventListener('click', () => {
-      this.setExtended(!this.isExtended())
+      this.setExpanded(!this.isExpanded())
     })
 
     span.addEventListener('contextmenu', e => {
@@ -496,14 +496,14 @@ class Task {
 
     if (this.isFolder()) {
       obj.children = this.children.map(child => child.serialize())
-      obj.extended = this.isExtended()
+      obj.expanded = this.isExpanded()
     }
 
     return obj
   }
 
   /**
-   * @param {{name: string, selected: number, extended?: boolean, children?: Array}} obj 
+   * @param {{name: string, selected: number, expanded?: boolean, children?: Array}} obj 
    * @returns {Task}
    */
   static FromSerial(obj) {
@@ -515,7 +515,7 @@ class Task {
         const childTask = Task.FromSerial(child)
         thisTask.addTask(childTask, false, false)
       }
-      thisTask.setExtended(obj.extended, false)
+      thisTask.setExpanded(obj.expanded, false)
     }
 
     return thisTask
