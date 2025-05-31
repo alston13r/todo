@@ -1,9 +1,10 @@
 /**
  * @param {string} prefix 
+ * @param {string} suffix 
  * @returns {string}
  */
-function createRandomName(prefix = '') {
-  return prefix + Math.random().toString(36).slice(2)
+function createRandomName(prefix = '', suffix = '') {
+  return prefix + Math.random().toString(36).slice(2) + suffix
 }
 
 
