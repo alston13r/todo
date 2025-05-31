@@ -35,3 +35,5 @@ When hovering over a Task, three plus '+' buttons will show up. Each one, when c
 * The right button will add a Task within this one. This treats the current Task as if it were a group, or a folder.
 
 Groups, or folders, have a folder icon. You can left-click on groups to expand or collapse the group's contents. I will allow for more / custom icons soon.
+
+When right-clicking a Task, you can rename them or change their background color. For groups, you can expand or collapse all sub-tasks.
