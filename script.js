@@ -525,7 +525,8 @@ class Task {
     })
 
     const container2 = document.createElement('div')
-    container2.classList.add('inlineSpread')
+    container2.classList.add('horizontal', 'spread')
+    container2.style.gap = '40px'
 
     const span = document.createElement('span')
     const icon = document.createElement('i')
@@ -546,7 +547,7 @@ class Task {
     ul.classList.add('nested')
 
     const utilityContainer = document.createElement('div')
-    utilityContainer.classList.add('horizontal')
+    utilityContainer.classList.add('horizontal', 'center')
 
     const optionsDropdown = document.createElement('select')
     for (const option of OptionManager) {
