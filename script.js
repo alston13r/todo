@@ -1,3 +1,20 @@
+/**
+ * @param {string} prefix 
+ * @returns {string}
+ */
+function createRandomName(prefix = '') {
+  return prefix + Math.random().toString(36).slice(2)
+}
+
+
+
+
+
+
+
+
+
+
 /** @type {HTMLElement} */
 let ctxMenu = null
 const contextMenuRemovalCountdown = 0.2
@@ -474,6 +491,7 @@ class Task {
     utilityContainer.classList.add('horizontal', 'center')
 
     const optionsDropdown = document.createElement('select')
+    optionsDropdown.name = createRandomName('select-')
     for (const option of OptionManager) {
       optionsDropdown.appendChild(option.createElement())
     }
