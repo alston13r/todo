@@ -14,7 +14,6 @@ function createRandomName(prefix = '', suffix = '') {
 
 
 
-ContextMenu.SetupEventListeners()
 
 
 
@@ -584,6 +583,8 @@ function isRootEmpty() {
 }
 
 document.body.onload = () => {
+  ContextMenu.SetupEventListeners()
+
   TaskIO.Load()
   handleEmptyRoot()
 }
