@@ -248,7 +248,7 @@ class Task {
       const i = parentChildren.indexOf(this)
       if (i >= 0) {
         parentChildren.splice(i, 1)
-        if (!parent.isFolder()) {
+        if (!parent.isGroup()) {
           parent.setExpanded(false, false)
           parent.hideIcon()
         }
@@ -379,7 +379,7 @@ class Task {
   setExpanded(newValue, save = true) {
     if (!this.builtDom) return
 
-    if (!this.isFolder()) {
+    if (!this.isGroup()) {
       this._expanded = false
       this.hideIcon()
       this.dom.icon.classList.remove('down')
@@ -507,7 +507,7 @@ class Task {
   /**
    * @returns {boolean}
    */
-  isFolder() {
+  isGroup() {
     return this.children.length > 0
   }
 
@@ -520,7 +520,7 @@ class Task {
     obj.name = this.name
     obj.selected = this.dom.select.selectedIndex
 
-    if (this.isFolder()) {
+    if (this.isGroup()) {
       obj.children = this.children.map(child => child.serialize())
       obj.expanded = this.isExpanded()
     }
