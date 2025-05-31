@@ -80,43 +80,6 @@ function getTextColor(r, g, b) {
 
 
 
-// /**
-//  * @param {HTMLElement} element 
-//  */
-// function makeTextReadable(element) {
-//   // modeled after three.js's Color class
-//   const bg = getComputedStyle(element).backgroundColor
-//   let m
-
-//   if (m = /^(\w+)\(([^\)]*)\)/.exec(bg)) {
-//     const name = m[1]
-//     const components = m[2]
-//     let color
-
-//     switch (name) {
-//       case 'rgb':
-//       case 'rgba':
-
-//         if (color = /\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*(\d*\.\d+)\s*)?$/.exec(components)) {
-//           const r = color[1]
-//           const g = color[2]
-//           const b = color[3]
-
-//           const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-//           element.style.color = luminance > 128 ? 'black' : 'white'
-//         }
-
-//         break
-//     }
-//   }
-// }
-
-
-
-
-
-
-
 
 
 
@@ -275,6 +238,44 @@ function promptForTaskName(callback, placeholder = '') {
 
   document.body.appendChild(background)
   input.focus()
+}
+
+/**
+ * @param {(ret: {original: string, picked: string}) => void} callback 
+ * @param {string} [initial='#ff0000'] 
+ */
+function promptForColor(callback, initial = '#ff0000') {
+  let removed = false
+
+  const background = document.createElement('div')
+  background.classList.add('horizontal', 'center', 'overlay')
+
+  const aligner = document.createElement('div')
+  aligner.classList.add('vertical', 'center')
+  background.appendChild(aligner)
+
+  const colorInput = document.createElement('input')
+  colorInput.classList.add('sleek')
+  colorInput.type = 'color'
+  colorInput.value = initial
+
+  const colorSubmit = document.createElement('button')
+  colorSubmit.classList.add('sleek')
+  colorSubmit.addEventListener('click', () => {
+    if (!removed) {
+      removed = true
+      background.remove()
+    }
+
+    const original = initial
+    const picked = colorInput.value
+    callback({ original, picked })
+  })
+  colorSubmit.innerText = 'Submit color'
+
+  aligner.append(colorInput, colorSubmit)
+
+  document.body.appendChild(background)
 }
 
 class Task {
