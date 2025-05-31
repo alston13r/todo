@@ -13,7 +13,103 @@ function createRandomName(prefix = '', suffix = '') {
 
 
 
+/**
+ * @param {string} rgb rgb(r, g, b)
+ * @param {number} amount 
+ * @returns {string} hsl(h, s%, l%)
+ */
+function darkenColor(rgb, amount = 0.2) {
+  const [r, g, b] = rgb.match(/\d+/g).map(Number)
+  const hsl = rgbToHsl(r, g, b)
 
+  hsl[2] = Math.max(0, hsl[2] - amount)
+
+  return `hsl(${Math.round(hsl[0] * 360)}, ${Math.round(hsl[1] * 100)}%, ${Math.round(hsl[2] * 100)}%)`
+}
+
+/**
+ * @param {number} r 0-255
+ * @param {number} g 0-255
+ * @param {number} b 0-255
+ * @returns {[number, number, number]}
+ */
+function rgbToHsl(r, g, b) {
+  r /= 255
+  g /= 255
+  b /= 255
+
+  const max = Math.max(r, g, b)
+  const min = Math.min(r, g, b)
+  let h, s, l = (max + min) / 2
+
+  if (max === min) {
+    h = s = 0
+  } else {
+    const d = max - min
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
+    switch (max) {
+      case r:
+        h = ((g - b) / d + (g < b ? 6 : 0))
+        break
+      case g:
+        h = ((b - r) / d + 2)
+        break
+      case b:
+        h = ((r - g) / d + 4)
+        break
+    }
+    h /= 6
+  }
+
+  return [h, s, l]
+}
+
+/**
+ * @param {number} r 
+ * @param {number} g 
+ * @param {number} b 
+ * @returns {'black' | 'white'}
+ */
+function getTextColor(r, g, b) {
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luminance > 128 ? 'black' : 'white'
+}
+
+
+
+
+
+
+// /**
+//  * @param {HTMLElement} element 
+//  */
+// function makeTextReadable(element) {
+//   // modeled after three.js's Color class
+//   const bg = getComputedStyle(element).backgroundColor
+//   let m
+
+//   if (m = /^(\w+)\(([^\)]*)\)/.exec(bg)) {
+//     const name = m[1]
+//     const components = m[2]
+//     let color
+
+//     switch (name) {
+//       case 'rgb':
+//       case 'rgba':
+
+//         if (color = /\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*(\d*\.\d+)\s*)?$/.exec(components)) {
+//           const r = color[1]
+//           const g = color[2]
+//           const b = color[3]
+
+//           const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+//           element.style.color = luminance > 128 ? 'black' : 'white'
+//         }
+
+//         break
+//     }
+//   }
+// }
 
 
 
@@ -182,6 +278,9 @@ function promptForTaskName(callback, placeholder = '') {
 }
 
 class Task {
+  /** @type {string} */
+  static DefaultBackgroundColor = '#999'
+
   /** @type {Task} */
   static _CurrentHover = null
 
@@ -210,8 +309,9 @@ class Task {
 
   /**
    * @param {string} name 
+   * @param {{ backgroundColor: string; }} [style={ backgroundColor: Task.DefaultBackgroundColor }] 
    */
-  constructor(name) {
+  constructor(name, style = { backgroundColor: Task.DefaultBackgroundColor }) {
     this.name = name
 
     this.builtDom = false
@@ -223,6 +323,10 @@ class Task {
     this.parent = null
 
     this._expanded = false
+
+    this.createDom()
+
+    this.style = style
   }
 
   /**
@@ -509,6 +613,39 @@ class Task {
   }
 
   /**
+   * @param {string} newColor 
+   * @param {boolean} [save=true] 
+   */
+  setBackgroundColor(newColor = '', save = true) {
+    if (!this.builtDom) return
+
+    if (newColor.length > 0) {
+      // set background color
+      this.dom.span.style.backgroundColor = newColor
+    } else {
+      this.dom.span.style.backgroundColor = this.style.backgroundColor
+    }
+
+    // get rgb(r, g, b)
+    const rgbString = getComputedStyle(this.dom.span).backgroundColor
+    const [r, g, b] = rgbString.match(/\d+/g).map(Number)
+
+    // ensure style is updated
+    this.style.backgroundColor = rgbString
+
+    if (save === true) TaskIO.Save()
+
+    // get darkened hsl(h, s%, l%)
+    const hsl = darkenColor(rgbString)
+
+    // set border color
+    this.dom.span.style.borderColor = hsl
+
+    // set text color
+    this.dom.span.style.color = getTextColor(r, g, b)
+  }
+
+  /**
    * @returns {boolean}
    */
   isGroup() {
@@ -529,6 +666,10 @@ class Task {
       obj.expanded = this.isExpanded()
     }
 
+    if (this.style.backgroundColor !== 'rgb(153, 153, 153)') {
+      obj.backgroundColor = this.style.backgroundColor
+    }
+
     return obj
   }
 
@@ -537,7 +678,14 @@ class Task {
    * @returns {Task}
    */
   static FromSerial(obj) {
-    const thisTask = new Task(obj.name)
+    let thisTask
+
+    if ('backgroundColor' in obj) {
+      thisTask = new Task(obj.name, { backgroundColor: obj.backgroundColor })
+    } else {
+      thisTask = new Task(obj.name)
+    }
+
     thisTask.createDom({ initialSelection: obj.selected })
 
     if ('children' in obj) {
@@ -556,9 +704,19 @@ const root = document.querySelector('.root')
 
 /**
  * @param {Task} task 
+ * @param {boolean} [cascadeStyle=false] 
  */
-function addTaskToRoot(task) {
+function addTaskToRoot(task, cascadeStyle = false) {
   root.appendChild(task.createDom())
+
+  /**
+   * @param {Task} parent 
+   */
+  function cascade(parent) {
+    parent.setBackgroundColor('', false)
+    for (const child of parent.children) cascade(child)
+  }
+  if (cascadeStyle === true) cascade(task)
 }
 
 /**

@@ -21,7 +21,7 @@ class TaskIO {
         if (obj.root.length === 0) return
 
         for (const itemSerial of obj.root) {
-          addTaskToRoot(Task.FromSerial(itemSerial))
+          addTaskToRoot(Task.FromSerial(itemSerial), true)
         }
       } catch (err) {
         console.error('The key stored in local storage is invalid, please import again', err)
