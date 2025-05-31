@@ -1,152 +1,79 @@
-/** @type {HTMLElement} */
-let ctxMenu = null
-const contextMenuRemovalCountdown = 0.2
-let contextMenuRemovalNumber = null
-let contextMenuMarked = false
-let contextMenuCreatedOn = null
-
-function destroyContextMenu() {
-  if (ctxMenu === null) return
-  ctxMenu.remove()
-  ctxMenu = null
-  contextMenuRemovalNumber = null
-  contextMenuMarked = false
-  contextMenuCreatedOn = null
+/**
+ * @param {string} prefix 
+ * @param {string} suffix 
+ * @returns {string}
+ */
+function createRandomName(prefix = '', suffix = '') {
+  return prefix + Math.random().toString(36).slice(2) + suffix
 }
 
-function markContextMenuForRemoval() {
-  if (ctxMenu === null) return
-  if (contextMenuMarked) return
 
-  contextMenuRemovalNumber = setTimeout(() => {
-    destroyContextMenu()
-  }, contextMenuRemovalCountdown * 1000)
 
-  contextMenuMarked = true
-}
 
-document.addEventListener('click', e => {
-  if (ctxMenu === null) return
-  if (!ctxMenu.contains(e.target)) markContextMenuForRemoval()
-})
-window.addEventListener('contextmenu', e => {
-  if (ctxMenu === null) return
-  if (contextMenuCreatedOn === e.target) return
-  if (!ctxMenu.contains(e.target)) markContextMenuForRemoval()
-})
+
+
 
 /**
- * @param {PointerEvent} e 
- * @param {Task} task
+ * @param {string} rgb rgb(r, g, b)
+ * @param {number} amount 
+ * @returns {string} hsl(h, s%, l%)
  */
-function createContextMenu(e, task) {
-  destroyContextMenu()
+function darkenColor(rgb, amount = 0.2) {
+  const [r, g, b] = rgb.match(/\d+/g).map(Number)
+  const hsl = rgbToHsl(r, g, b)
 
-  const menu = document.createElement('ul')
-  ctxMenu = menu
-  contextMenuCreatedOn = e.target
-  menu.classList.add('ctx-menu')
-  menu.style.left = `${e.pageX - 7}px`
-  menu.style.top = `${e.pageY - 7}px`
+  hsl[2] = Math.max(0, hsl[2] - amount)
 
-  const line = document.createElement('li')
-  const lineSpan = document.createElement('span')
-
-  line.appendChild(lineSpan)
-  lineSpan.innerText = 'Rename'
-  lineSpan.addEventListener('click', () => {
-    promptForTaskName(ret => {
-      if (ret.valid) {
-        task.rename(ret.trimmed)
-      }
-    }, task.name)
-    markContextMenuForRemoval()
-  })
-
-  menu.appendChild(line)
-
-  menu.addEventListener('mouseleave', () => {
-    markContextMenuForRemoval()
-  })
-  menu.addEventListener('contextmenu', e => {
-    e.preventDefault()
-  })
-
-  document.body.appendChild(menu)
+  return `hsl(${Math.round(hsl[0] * 360)}, ${Math.round(hsl[1] * 100)}%, ${Math.round(hsl[2] * 100)}%)`
 }
 
+/**
+ * @param {number} r 0-255
+ * @param {number} g 0-255
+ * @param {number} b 0-255
+ * @returns {[number, number, number]}
+ */
+function rgbToHsl(r, g, b) {
+  r /= 255
+  g /= 255
+  b /= 255
 
+  const max = Math.max(r, g, b)
+  const min = Math.min(r, g, b)
+  let h, s, l = (max + min) / 2
 
-
-
-
-
-class SleekInput {
-  /**
-   * @param {string} placeholder 
-   */
-  constructor(placeholder = '') {
-    this.placeholder = placeholder
-
-    const span = document.createElement('span')
-    span.style.whiteSpace = 'pre'
-    span.style.visibility = 'hidden'
-
-    this.tempSpan = span
-
-    this.builtDom = false
+  if (max === min) {
+    h = s = 0
+  } else {
+    const d = max - min
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
+    switch (max) {
+      case r:
+        h = ((g - b) / d + (g < b ? 6 : 0))
+        break
+      case g:
+        h = ((b - r) / d + 2)
+        break
+      case b:
+        h = ((r - g) / d + 4)
+        break
+    }
+    h /= 6
   }
 
-  /**
-   * @param {string} initialValue
-   * @returns {HTMLElement}
-   */
-  createDom(initialValue = '') {
-    const input = document.createElement('input')
-    input.type = 'text'
-    input.classList.add('sleek')
-    input.placeholder = this.placeholder
-
-    this.domElement = input
-    this.builtDom = true
-
-    input.addEventListener('input', () => {
-      this.updateWidth(input.value)
-    })
-    input.value = initialValue
-    this.updateWidth(initialValue)
-
-    return this.domElement
-  }
-
-  /**
-   * @param {string} input 
-   */
-  updateWidth(input) {
-    if (!this.builtDom) return
-
-    const span = this.tempSpan
-    span.style.font = getComputedStyle(this.domElement).font
-    document.body.appendChild(span)
-
-    if (input.length === 0) span.textContent = this.placeholder
-    else span.textContent = input
-
-    const width = span.offsetWidth
-    this.domElement.style.width = width + 'px'
-
-    span.remove()
-  }
+  return [h, s, l]
 }
 
-
-
-
-
-
-
-
-
+/**
+ * @param {number} r 
+ * @param {number} g 
+ * @param {number} b 
+ * @returns {'black' | 'white'}
+ */
+function getTextColor(r, g, b) {
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luminance > 128 ? 'black' : 'white'
+}
 
 
 
@@ -199,7 +126,6 @@ function markCreationButtonsForRemoval(task, immediate = false) {
  */
 function addCreationButtonsToTask(task) {
   if (taskToButtonsMap.has(task)) {
-    // ensure not marked for removal
     clearTimeout(taskToButtonsMap.get(task).timeout)
     return
   }
@@ -266,9 +192,10 @@ function addCreationButtonsToTask(task) {
 
 /**
  * @param {(ret: {original: string, trimmed: string, valid: boolean}) => void} callback 
- * @param {string} placeholder
+ * @param {string} [initial=''] 
+ * @param {string} [placeholder=''] 
  */
-function promptForTaskName(callback, placeholder = '') {
+function promptForTaskName(callback, initial = '', placeholder = '') {
   let removed = false
   let escaped = false
 
@@ -286,7 +213,7 @@ function promptForTaskName(callback, placeholder = '') {
   background.appendChild(aligner)
 
   const sleek = new SleekInput(placeholder)
-  const input = sleek.createDom()
+  const input = sleek.createDom(initial)
   input.addEventListener('change', () => {
     if (!removed) {
       removed = true
@@ -314,7 +241,48 @@ function promptForTaskName(callback, placeholder = '') {
   input.focus()
 }
 
+/**
+ * @param {(ret: {original: string, picked: string}) => void} callback 
+ * @param {string} [initial='#ff0000'] 
+ */
+function promptForColor(callback, initial = '#ff0000') {
+  let removed = false
+
+  const background = document.createElement('div')
+  background.classList.add('horizontal', 'center', 'overlay')
+
+  const aligner = document.createElement('div')
+  aligner.classList.add('vertical', 'center')
+  background.appendChild(aligner)
+
+  const colorInput = document.createElement('input')
+  colorInput.classList.add('sleek')
+  colorInput.type = 'color'
+  colorInput.value = initial
+
+  const colorSubmit = document.createElement('button')
+  colorSubmit.classList.add('sleek')
+  colorSubmit.addEventListener('click', () => {
+    if (!removed) {
+      removed = true
+      background.remove()
+    }
+
+    const original = initial
+    const picked = colorInput.value
+    callback({ original, picked })
+  })
+  colorSubmit.innerText = 'Submit color'
+
+  aligner.append(colorInput, colorSubmit)
+
+  document.body.appendChild(background)
+}
+
 class Task {
+  /** @type {string} */
+  static DefaultBackgroundColor = '#999'
+
   /** @type {Task} */
   static _CurrentHover = null
 
@@ -343,8 +311,9 @@ class Task {
 
   /**
    * @param {string} name 
+   * @param {{ backgroundColor: string; }} [style={ backgroundColor: Task.DefaultBackgroundColor }] 
    */
-  constructor(name) {
+  constructor(name, style = { backgroundColor: Task.DefaultBackgroundColor }) {
     this.name = name
 
     this.builtDom = false
@@ -355,7 +324,11 @@ class Task {
     /** @type {Task} */
     this.parent = null
 
-    this._extended = false
+    this._expanded = false
+
+    this.createDom()
+
+    this.style = style
   }
 
   /**
@@ -381,8 +354,8 @@ class Task {
       const i = parentChildren.indexOf(this)
       if (i >= 0) {
         parentChildren.splice(i, 1)
-        if (parentChildren.length === 0) {
-          parent.setExtended(false, false)
+        if (!parent.isGroup()) {
+          parent.setExpanded(false, false)
           parent.hideIcon()
         }
       }
@@ -416,7 +389,7 @@ class Task {
     task.parent = this
 
     this.dom.ul.appendChild(task.createDom())
-    this.extend(bubble, false)
+    this.expand(bubble, false)
 
     if (save === true) TaskIO.Save()
   }
@@ -462,32 +435,58 @@ class Task {
   /**
    * @param {boolean} bubble 
    */
-  extend(bubble = true, save = true) {
-    this.setExtended(true, false)
+  expand(bubble = true, save = true) {
+    this.setExpanded(true, false)
     this.showIcon()
 
     if (bubble === true) {
       if (this.parent === null && save) TaskIO.Save()
-      this.parent?.extend(bubble)
+      this.parent?.expand(bubble)
     } else if (save === true) TaskIO.Save()
+  }
+
+  /**
+   * @param {boolean} save 
+   */
+  expandAll(save = true) {
+    this.setExpanded(true, false)
+
+    for (const child of this.children) {
+      child.expandAll(false)
+    }
+
+    if (save === true) TaskIO.Save()
+  }
+
+  /**
+   * @param {boolean} save 
+   */
+  collapseAll(save = true) {
+    this.setExpanded(false, false)
+
+    for (const child of this.children) {
+      child.collapseAll(false)
+    }
+
+    if (save === true) TaskIO.Save()
   }
 
   /**
    * @returns {boolean}
    */
-  isExtended() {
-    return this._extended
+  isExpanded() {
+    return this._expanded
   }
 
   /**
    * @param {boolean} newValue 
    * @param {boolean} save 
    */
-  setExtended(newValue, save = true) {
+  setExpanded(newValue, save = true) {
     if (!this.builtDom) return
 
-    if (this.children.length === 0) {
-      this._extended = false
+    if (!this.isGroup()) {
+      this._expanded = false
       this.hideIcon()
       this.dom.icon.classList.remove('down')
       this.dom.ul.classList.remove('active')
@@ -495,9 +494,9 @@ class Task {
       return
     }
 
-    if (typeof newValue !== 'boolean' || this._extended === newValue) return
-    this._extended = newValue
-    if (this._extended) {
+    if (typeof newValue !== 'boolean' || this._expanded === newValue) return
+    this._expanded = newValue
+    if (this._expanded) {
       this.dom.icon.classList.add('down')
       this.dom.ul.classList.add('active')
     } else {
@@ -525,7 +524,8 @@ class Task {
     })
 
     const container2 = document.createElement('div')
-    container2.classList.add('inlineSpread')
+    container2.classList.add('horizontal', 'spread')
+    container2.style.gap = '40px'
 
     const span = document.createElement('span')
     const icon = document.createElement('i')
@@ -534,21 +534,26 @@ class Task {
     span.append(icon, text)
 
     span.addEventListener('click', () => {
-      this.setExtended(!this.isExtended())
+      this.setExpanded(!this.isExpanded())
     })
 
     span.addEventListener('contextmenu', e => {
       e.preventDefault()
-      createContextMenu(e, this)
+      if (this.isGroup()) {
+        ContextMenu.CreateGroupContextMenu(e, this)
+      } else {
+        ContextMenu.CreateTaskContextMenu(e, this)
+      }
     })
 
     const ul = document.createElement('ul')
     ul.classList.add('nested')
 
     const utilityContainer = document.createElement('div')
-    utilityContainer.classList.add('horizontal')
+    utilityContainer.classList.add('horizontal', 'center')
 
     const optionsDropdown = document.createElement('select')
+    optionsDropdown.name = createRandomName('select-')
     for (const option of OptionManager) {
       optionsDropdown.appendChild(option.createElement())
     }
@@ -610,6 +615,46 @@ class Task {
   }
 
   /**
+   * @param {string} newColor 
+   * @param {boolean} [save=true] 
+   */
+  setBackgroundColor(newColor = '', save = true) {
+    if (!this.builtDom) return
+
+    if (newColor.length > 0) {
+      // set background color
+      this.dom.span.style.backgroundColor = newColor
+    } else {
+      this.dom.span.style.backgroundColor = this.style.backgroundColor
+    }
+
+    // get rgb(r, g, b)
+    const rgbString = getComputedStyle(this.dom.span).backgroundColor
+    const [r, g, b] = rgbString.match(/\d+/g).map(Number)
+
+    // ensure style is updated
+    this.style.backgroundColor = rgbString
+
+    if (save === true) TaskIO.Save()
+
+    // get darkened hsl(h, s%, l%)
+    const hsl = darkenColor(rgbString)
+
+    // set border color
+    this.dom.span.style.borderColor = hsl
+
+    // set text color
+    this.dom.span.style.color = getTextColor(r, g, b)
+  }
+
+  /**
+   * @returns {boolean}
+   */
+  isGroup() {
+    return this.children.length > 0
+  }
+
+  /**
    * @returns {Object}
    */
   serialize() {
@@ -618,20 +663,31 @@ class Task {
     obj.name = this.name
     obj.selected = this.dom.select.selectedIndex
 
-    if (this.children.length > 0) {
+    if (this.isGroup()) {
       obj.children = this.children.map(child => child.serialize())
-      obj.extended = this.isExtended()
+      obj.expanded = this.isExpanded()
+    }
+
+    if (this.style.backgroundColor !== 'rgb(153, 153, 153)') {
+      obj.backgroundColor = this.style.backgroundColor
     }
 
     return obj
   }
 
   /**
-   * @param {{name: string, selected: number, extended?: boolean, children?: Array}} obj 
+   * @param {{name: string, selected: number, expanded?: boolean, children?: Array}} obj 
    * @returns {Task}
    */
   static FromSerial(obj) {
-    const thisTask = new Task(obj.name)
+    let thisTask
+
+    if ('backgroundColor' in obj) {
+      thisTask = new Task(obj.name, { backgroundColor: obj.backgroundColor })
+    } else {
+      thisTask = new Task(obj.name)
+    }
+
     thisTask.createDom({ initialSelection: obj.selected })
 
     if ('children' in obj) {
@@ -639,7 +695,7 @@ class Task {
         const childTask = Task.FromSerial(child)
         thisTask.addTask(childTask, false, false)
       }
-      thisTask.setExtended(obj.extended, false)
+      thisTask.setExpanded(obj.expanded, false)
     }
 
     return thisTask
@@ -650,9 +706,19 @@ const root = document.querySelector('.root')
 
 /**
  * @param {Task} task 
+ * @param {boolean} [cascadeStyle=false] 
  */
-function addTaskToRoot(task) {
+function addTaskToRoot(task, cascadeStyle = false) {
   root.appendChild(task.createDom())
+
+  /**
+   * @param {Task} parent 
+   */
+  function cascade(parent) {
+    parent.setBackgroundColor('', false)
+    for (const child of parent.children) cascade(child)
+  }
+  if (cascadeStyle === true) cascade(task)
 }
 
 /**
@@ -707,6 +773,8 @@ function isRootEmpty() {
 }
 
 document.body.onload = () => {
+  ContextMenu.SetupEventListeners()
+
   TaskIO.Load()
   handleEmptyRoot()
 }
