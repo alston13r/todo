@@ -58,7 +58,7 @@ input[type=text].sleek {
   outline: none;
 
   width: 10ch;
-  min-width: 10ch;
+  min-width: 8ch;
   max-width: 70ch;
 
   transition:
