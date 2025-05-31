@@ -192,9 +192,10 @@ function addCreationButtonsToTask(task) {
 
 /**
  * @param {(ret: {original: string, trimmed: string, valid: boolean}) => void} callback 
- * @param {string} placeholder
+ * @param {string} [initial=''] 
+ * @param {string} [placeholder=''] 
  */
-function promptForTaskName(callback, placeholder = '') {
+function promptForTaskName(callback, initial = '', placeholder = '') {
   let removed = false
   let escaped = false
 
@@ -212,7 +213,7 @@ function promptForTaskName(callback, placeholder = '') {
   background.appendChild(aligner)
 
   const sleek = new SleekInput(placeholder)
-  const input = sleek.createDom()
+  const input = sleek.createDom(initial)
   input.addEventListener('change', () => {
     if (!removed) {
       removed = true
