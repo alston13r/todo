@@ -51,25 +51,6 @@ button.is-plus {
   height: 1.2ch;
 }
 
-input[type=text].sleek {
-  border: 2px solid white;
-  background-color: #555;
-  font-size: inherit;
-  outline: none;
-
-  width: 10ch;
-  min-width: 8ch;
-  max-width: 70ch;
-
-  transition:
-    width 0.2s;
-}
-
-input[type=text].sleek::placeholder {
-  color: rgb(124, 124, 124);
-  font-style: italic;
-}
-
 .overlay {
   position: fixed;
   left: 0;
@@ -99,15 +80,3 @@ ul.ctx-menu li {
 ul.ctx-menu li:hover {
   color: white;
 }
-
-
-
-/* .ctx-menu .ctx-button {
-  color: #bbb;
-  transition: color 0.5s;
-}
-
-.ctx-menu .ctx-button:hover {
-  color: white;
-  cursor: pointer;
-} */
