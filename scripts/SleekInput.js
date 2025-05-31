@@ -16,7 +16,7 @@ class SleekInput {
 
   /**
    * @param {string} initialValue
-   * @returns {HTMLElement}
+   * @returns {HTMLInputElement}
    */
   createDom(initialValue = '') {
     const input = document.createElement('input')
