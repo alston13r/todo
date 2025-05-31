@@ -150,6 +150,7 @@ function addCreationButtonsToTask(task) {
       if (ret.valid) {
         const newTask = new Task(ret.trimmed)
         task.addTaskAbove(newTask)
+        newTask.setBackgroundColor()
       }
     })
   })
@@ -159,6 +160,7 @@ function addCreationButtonsToTask(task) {
       if (ret.valid) {
         const newTask = new Task(ret.trimmed)
         task.addTaskBelow(newTask)
+        newTask.setBackgroundColor()
       }
     })
   })
@@ -168,6 +170,7 @@ function addCreationButtonsToTask(task) {
       if (ret.valid) {
         const newTask = new Task(ret.trimmed)
         task.addTask(newTask)
+        newTask.setBackgroundColor()
       }
     })
   })
@@ -537,6 +540,7 @@ class Task {
 
     span.addEventListener('contextmenu', e => {
       e.preventDefault()
+      e.stopPropagation()
       if (this.isGroup()) {
         ContextMenu.CreateGroupContextMenu(e, this)
       } else {
@@ -753,6 +757,7 @@ function addCreateButtonToRoot() {
       if (ret.valid) {
         const newTask = new Task(ret.trimmed)
         addTaskToRoot(newTask)
+        newTask.setBackgroundColor()
         button.remove()
         TaskIO.Save()
       }
