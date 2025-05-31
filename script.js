@@ -86,25 +86,6 @@ function createContextMenu(e, task) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /** @type {Map<Task, Object>} */
 const taskToButtonsMap = new Map()
 
@@ -143,7 +124,6 @@ function markCreationButtonsForRemoval(task, immediate = false) {
  */
 function addCreationButtonsToTask(task) {
   if (taskToButtonsMap.has(task)) {
-    // ensure not marked for removal
     clearTimeout(taskToButtonsMap.get(task).timeout)
     return
   }
@@ -325,7 +305,7 @@ class Task {
       const i = parentChildren.indexOf(this)
       if (i >= 0) {
         parentChildren.splice(i, 1)
-        if (parentChildren.length === 0) {
+        if (!parent.isFolder()) {
           parent.setExtended(false, false)
           parent.hideIcon()
         }
@@ -430,7 +410,7 @@ class Task {
   setExtended(newValue, save = true) {
     if (!this.builtDom) return
 
-    if (this.children.length === 0) {
+    if (!this.isFolder()) {
       this._extended = false
       this.hideIcon()
       this.dom.icon.classList.remove('down')
@@ -555,6 +535,13 @@ class Task {
   }
 
   /**
+   * @returns {boolean}
+   */
+  isFolder() {
+    return this.children.length > 0
+  }
+
+  /**
    * @returns {Object}
    */
   serialize() {
@@ -563,7 +550,7 @@ class Task {
     obj.name = this.name
     obj.selected = this.dom.select.selectedIndex
 
-    if (this.children.length > 0) {
+    if (this.isFolder()) {
       obj.children = this.children.map(child => child.serialize())
       obj.extended = this.isExtended()
     }
