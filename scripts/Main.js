@@ -326,8 +326,6 @@ class Task {
 
     this._expanded = false
 
-    this.createDom()
-
     this.style = style
   }
 
