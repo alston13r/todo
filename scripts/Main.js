@@ -779,5 +779,4 @@ document.body.onload = () => {
   ContextMenu.SetupEventListeners()
 
   TaskIO.Load()
-  handleEmptyRoot()
 }

@@ -20,6 +20,8 @@ class TaskIO {
         const obj = JSON.parse(value)
         if (obj.root.length === 0) return
 
+        root.innerHTML = ''
+
         for (const itemSerial of obj.root) {
           addTaskToRoot(Task.FromSerial(itemSerial), true)
         }
@@ -27,46 +29,57 @@ class TaskIO {
         console.error('The key stored in local storage is invalid, please import again', err)
       }
     }
+    handleEmptyRoot()
   }
 
-  static Export() {
-    // check for clipboard permissions
-
-    // if allowed, copy directly
-
-    // else show text area with text already selected
-    const data = localStorage.getItem(localStorageKeyName)
-    navigator.clipboard.writeText(data ?? '')
+  /**
+   * @param {string} data 
+   */
+  static _ExportToClipboard(data = '') {
+    navigator.clipboard.writeText(data)
       .then(() => console.log('Saved to clipboard'))
       .catch(err => console.error('Copy failed', err))
   }
 
-  static async Import() {
+  static async Export() {
+    // get data to export
+    const data = localStorage.getItem(localStorageKeyName)
+
     // check for clipboard permissions
+    const perms = await navigator.permissions.query({ name: 'clipboard-write', allowWithoutGesture: false })
 
     // if allowed, copy directly
+    if (perms.state === 'prompt' || perms.state === 'granted') return TaskIO._ExportToClipboard(data)
 
-    // else show empty text area
+    // else show text area with text already selected
+    // TODO show prompt
+    console.log(data)
+  }
+
+  /**
+   * @returns {Promise<string>}
+   */
+  static async _ImportFromClipboard() {
     try {
-      const text = await navigator.clipboard.readText()
-      localStorage.setItem(localStorageKeyName, text)
-      TaskIO.Load()
+      return await navigator.clipboard.readText()
     } catch (err) {
-      console.error('Failed to import', err)
+      console.error('Failed to import from clipboard', err)
     }
   }
+
+  static async Import() {
+    // check for clipboard permissions
+    const perms = await navigator.permissions.query({ name: 'clipboard-read', allowWithoutGesture: false })
+
+    // if allowed, copy directly
+    if (perms.state === 'prompt' || perms.state === 'granted') {
+      const data = await TaskIO._ImportFromClipboard()
+      localStorage.setItem(localStorageKeyName, data)
+      TaskIO.Load()
+      return
+    }
+
+    // else show empty text area
+    console.log('Prompt for import not yet implemented')
+  }
 }
-
-
-
-
-
-// const queryOpts = { name: 'clipboard-read', allowWithoutGesture: false };
-// const permissionStatus = await navigator.permissions.query(queryOpts);
-// // Will be 'granted', 'denied' or 'prompt':
-// console.log(permissionStatus.state);
-
-// // Listen for changes to the permission state
-// permissionStatus.onchange = () => {
-//   console.log(permissionStatus.state);
-// };
