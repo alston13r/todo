@@ -23,6 +23,7 @@ class SleekInput {
     input.type = 'text'
     input.classList.add('sleek')
     input.placeholder = this.placeholder
+    input.spellcheck = false
 
     this.domElement = input
     this.builtDom = true
