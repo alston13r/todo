@@ -1,6 +1,8 @@
+const localStorageKeyName = 'todo-app-items'
+
 class TaskIO {
   static Save() {
-    if (isRootEmpty()) return localStorage.setItem('todo-app-items', '')
+    if (isRootEmpty()) return localStorage.setItem(localStorageKeyName, '')
 
     const rootObjs = []
     const obj = { root: rootObjs }
@@ -8,11 +10,11 @@ class TaskIO {
       rootObjs.push(itemElement.myTaskReference.serialize())
     }
 
-    localStorage.setItem('todo-app-items', JSON.stringify(obj))
+    localStorage.setItem(localStorageKeyName, JSON.stringify(obj))
   }
 
   static Load() {
-    const value = localStorage.getItem('todo-app-items')
+    const value = localStorage.getItem(localStorageKeyName)
     if (value !== null && value.length > 0) {
       const obj = JSON.parse(value)
       if (obj.root.length === 0) return
