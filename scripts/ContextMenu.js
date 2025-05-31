@@ -86,7 +86,27 @@ class ContextMenu {
           }
         }, task.name)
         menu.destroy()
-      })
+      }),
+      new ContextMenuLine('Change color', () => {
+        // rgb(r, g, b)
+        const bg = task.style.backgroundColor
+        function ensureLength(str = '00', len = 2, fill = '0') {
+          const t = fill.repeat(len).substring(0, str.length - len)
+          return t + str
+        }
+
+        const [r, g, b] = bg.match(/\d+/g).map(Number).map(v => ensureLength(v.toString(16)))
+        const bgFormatted = '#' + r + g + b
+
+        promptForColor(ret => {
+          task.setBackgroundColor(ret.picked)
+        }, bgFormatted)
+        menu.destroy()
+      }),
+      new ContextMenuLine('Reset color', () => {
+        task.setBackgroundColor(Task.DefaultBackgroundColor)
+        menu.destroy()
+      }),
     ])
 
     ContextMenu.Current = menu
@@ -111,6 +131,26 @@ class ContextMenu {
         }, task.name)
         menu.destroy()
       }),
+      new ContextMenuLine('Change color', () => {
+        // rgb(r, g, b)
+        const bg = task.style.backgroundColor
+        function ensureLength(str = '00', len = 2, fill = '0') {
+          const t = fill.repeat(len).substring(0, str.length - len)
+          return t + str
+        }
+
+        const [r, g, b] = bg.match(/\d+/g).map(Number).map(v => ensureLength(v.toString(16)))
+        const bgFormatted = '#' + r + g + b
+
+        promptForColor(ret => {
+          task.setBackgroundColor(ret.picked)
+        }, bgFormatted)
+        menu.destroy()
+      }),
+      new ContextMenuLine('Reset color', () => {
+        task.setBackgroundColor(Task.DefaultBackgroundColor)
+        menu.destroy()
+      }),
       new ContextMenuLine('Expand all', () => {
         task.expandAll()
         menu.destroy()
@@ -118,7 +158,7 @@ class ContextMenu {
       new ContextMenuLine('Collapse all', () => {
         task.collapseAll()
         menu.destroy()
-      })
+      }),
     ])
 
     ContextMenu.Current = menu
