@@ -433,7 +433,11 @@ class Task {
 
     span.addEventListener('contextmenu', e => {
       e.preventDefault()
-      ContextMenu.CreateTaskContextMenu(e, this)
+      if (this.isGroup()) {
+        ContextMenu.CreateGroupContextMenu(e, this)
+      } else {
+        ContextMenu.CreateTaskContextMenu(e, this)
+      }
     })
 
     const ul = document.createElement('ul')

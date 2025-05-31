@@ -93,6 +93,38 @@ class ContextMenu {
     return menu
   }
 
+  /**
+   * @param {PointerEvent} e 
+   * @param {Task} task 
+   * 
+   * @returns {ContextMenu}
+   */
+  static CreateGroupContextMenu(e, task) {
+    ContextMenu.DestroyCurrent()
+
+    const menu = new ContextMenu(e, [
+      new ContextMenuLine('Rename', () => {
+        promptForTaskName(ret => {
+          if (ret.valid) {
+            task.rename(ret.trimmed)
+          }
+        }, task.name)
+        menu.destroy()
+      }),
+      new ContextMenuLine('Expand all', () => {
+        task.expandAll()
+        menu.destroy()
+      }),
+      new ContextMenuLine('Collapse all', () => {
+        task.collapseAll()
+        menu.destroy()
+      })
+    ])
+
+    ContextMenu.Current = menu
+    return menu
+  }
+
   /** @type {Object} */
   static Listeners = null
 
