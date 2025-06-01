@@ -325,4 +325,15 @@ class Color {
 
     return `hsv(${h}, ${Math.round(s * 100)}%, ${Math.round(v * 100)}%)`
   }
+
+  /**
+   * @param {number[]} arr 
+   * @returns {[number, number, number]}
+   */
+  toArray(arr = []) {
+    arr[0] = this.r
+    arr[1] = this.g
+    arr[2] = this.b
+    return arr
+  }
 }
