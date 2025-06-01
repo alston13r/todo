@@ -73,6 +73,7 @@ ul.ctx-menu {
 }
 
 ul.ctx-menu li {
+  font-size: 70%;
   color: #bbb;
   transition: color 0.2s;
 }

@@ -20,7 +20,7 @@ class ContextMenu {
   static Current = null
 
   /** @type {number} */
-  static CreationOffset = 7
+  static CreationOffset = 20
 
   /** @type {number} */
   static RemovalCountdown = 0.2
@@ -38,8 +38,6 @@ class ContextMenu {
     const menu = document.createElement('ul')
     this.domElement = menu
     menu.classList.add('ctx-menu')
-    menu.style.left = `${e.pageX - ContextMenu.CreationOffset}px`
-    menu.style.top = `${e.pageY - ContextMenu.CreationOffset}px`
 
     this.createdOnTarget = e.target
 
@@ -47,7 +45,14 @@ class ContextMenu {
 
     menu.addEventListener('contextmenu', e => e.preventDefault())
 
+    menu.style.visibility = 'hidden'
     document.body.appendChild(menu)
+    const bounds = menu.getBoundingClientRect()
+
+    menu.style.left = e.pageX - (e.clientX + bounds.width >= window.innerWidth - ContextMenu.CreationOffset ? bounds.width : 0) + 'px'
+    menu.style.top = e.pageY - (e.clientY + bounds.height >= window.innerHeight - ContextMenu.CreationOffset ? bounds.height : 0) + 'px'
+
+    menu.style.visibility = 'visible'
   }
 
   destroy() {
@@ -165,6 +170,24 @@ class ContextMenu {
     return menu
   }
 
+  static CreateBackgroundContextMenu(e) {
+    ContextMenu.DestroyCurrent()
+
+    const menu = new ContextMenu(e, [
+      new ContextMenuLine('Import tasks', () => {
+        TaskIO.Import()
+        menu.destroy()
+      }),
+      new ContextMenuLine('Export tasks', () => {
+        TaskIO.Export()
+        menu.destroy()
+      }),
+    ])
+
+    ContextMenu.Current = menu
+    return menu
+  }
+
   /** @type {Object} */
   static Listeners = null
 
@@ -188,13 +211,33 @@ class ContextMenu {
       if (!ContextMenu.Current.contains(e.target)) ContextMenu.DestroyCurrent()
     }
 
+    /**
+     * @param {KeyboardEvent} e 
+     */
+    const windowKeydownCallback = e => {
+      if (ContextMenu.Current === null) return
+      if (e.key === 'Escape') ContextMenu.DestroyCurrent()
+    }
+
+    /**
+     * @param {PointerEvent} e 
+     */
+    const documentContextCallback = e => {
+      e.preventDefault()
+      ContextMenu.CreateBackgroundContextMenu(e)
+    }
+
     ContextMenu.Listeners = {
       documentClickCallback,
-      windowContextMenuCallback: windowContextmenuCallback
+      windowContextmenuCallback,
+      documentContextCallback,
+      windowKeydownCallback,
     }
 
     document.addEventListener('click', documentClickCallback)
     window.addEventListener('contextmenu', windowContextmenuCallback)
+    document.addEventListener('contextmenu', documentContextCallback)
+    window.addEventListener('keydown', windowKeydownCallback)
   }
 
   static DestroyEventListeners() {
@@ -202,6 +245,8 @@ class ContextMenu {
 
     document.removeEventListener('click', ContextMenu.Listeners.documentClickCallback)
     window.removeEventListener('contextmenu', ContextMenu.Listeners.windowContextmenuCallback)
+    document.removeEventListener('contextmenu', ContextMenu.Listeners.documentContextCallback)
+    window.removeEventListener('keydown', ContextMenu.Listeners.windowKeydownCallback)
 
     ContextMenu.Listeners = null
   }

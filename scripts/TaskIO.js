@@ -20,6 +20,8 @@ class TaskIO {
         const obj = JSON.parse(value)
         if (obj.root.length === 0) return
 
+        root.innerHTML = ''
+
         for (const itemSerial of obj.root) {
           addTaskToRoot(Task.FromSerial(itemSerial), true)
         }
@@ -27,46 +29,86 @@ class TaskIO {
         console.error('The key stored in local storage is invalid, please import again', err)
       }
     }
+    handleEmptyRoot()
   }
 
-  static Export() {
+  /**
+   * @param {string} [data=''] 
+   */
+  static _ExportToPrompt(data = '') {
+    promptForTextOutput(data)
+  }
+
+  /**
+   * @param {string} data 
+   */
+  static _ExportToClipboard(data = '') {
+    navigator.clipboard.writeText(data)
+      .then(() => console.log('Saved to clipboard'))
+      .catch(err => {
+        if (err.name === 'NotAllowedError') {
+          TaskIO._ExportToPrompt(data)
+        } else {
+          console.error('Export failed', err)
+        }
+      })
+  }
+
+  static async Export() {
+    // get data to export
+    const data = localStorage.getItem(localStorageKeyName)
+
     // check for clipboard permissions
+    const perms = await navigator.permissions.query({ name: 'clipboard-write', allowWithoutGesture: false })
 
     // if allowed, copy directly
+    if (perms.state === 'prompt' || perms.state === 'granted') return TaskIO._ExportToClipboard(data)
 
     // else show text area with text already selected
-    const data = localStorage.getItem(localStorageKeyName)
-    navigator.clipboard.writeText(data ?? '')
-      .then(() => console.log('Saved to clipboard'))
-      .catch(err => console.error('Copy failed', err))
+    TaskIO._ExportToPrompt(data)
+  }
+
+  /**
+   * @returns {Promise<string>}
+   */
+  static async _ImportFromPrompt() {
+    return await new Promise((res, rej) => {
+      promptForTextInput(ret => {
+        if (ret.valid) res(ret.trimmed)
+        else rej()
+      })
+    })
+  }
+
+  /**
+   * @returns {Promise<string>}
+   */
+  static async _ImportFromClipboard() {
+    try {
+      return await navigator.clipboard.readText()
+    } catch (err) {
+      if (err.name === 'NotAllowedError') {
+        return await TaskIO._ImportFromPrompt()
+      }
+      console.error('Import failed', err)
+    }
   }
 
   static async Import() {
     // check for clipboard permissions
+    const perms = await navigator.permissions.query({ name: 'clipboard-read', allowWithoutGesture: false })
 
     // if allowed, copy directly
+    if (perms.state === 'prompt' || perms.state === 'granted') {
+      const data = await TaskIO._ImportFromClipboard()
+      localStorage.setItem(localStorageKeyName, data)
+      TaskIO.Load()
+      return
+    }
 
     // else show empty text area
-    try {
-      const text = await navigator.clipboard.readText()
-      localStorage.setItem(localStorageKeyName, text)
-      TaskIO.Load()
-    } catch (err) {
-      console.error('Failed to import', err)
-    }
+    const data = await TaskIO._ImportFromPrompt()
+    localStorage.setItem(localStorageKeyName, data)
+    TaskIO.Load()
   }
 }
-
-
-
-
-
-// const queryOpts = { name: 'clipboard-read', allowWithoutGesture: false };
-// const permissionStatus = await navigator.permissions.query(queryOpts);
-// // Will be 'granted', 'denied' or 'prompt':
-// console.log(permissionStatus.state);
-
-// // Listen for changes to the permission state
-// permissionStatus.onchange = () => {
-//   console.log(permissionStatus.state);
-// };

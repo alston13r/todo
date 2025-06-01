@@ -24,6 +24,7 @@ class SleekInput {
     input.classList.add('sleek')
     input.placeholder = this.placeholder
     input.spellcheck = false
+    input.name = createRandomName('input-')
 
     this.domElement = input
     this.builtDom = true
