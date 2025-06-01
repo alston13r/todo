@@ -33,12 +33,25 @@ class TaskIO {
   }
 
   /**
+   * @param {string} [data=''] 
+   */
+  static _ExportToPrompt(data = '') {
+    promptForTextOutput(data)
+  }
+
+  /**
    * @param {string} data 
    */
   static _ExportToClipboard(data = '') {
     navigator.clipboard.writeText(data)
       .then(() => console.log('Saved to clipboard'))
-      .catch(err => console.error('Copy failed', err))
+      .catch(err => {
+        if (err.name === 'NotAllowedError') {
+          TaskIO._ExportToPrompt(data)
+        } else {
+          console.error('Export failed', err)
+        }
+      })
   }
 
   static async Export() {
@@ -52,8 +65,19 @@ class TaskIO {
     if (perms.state === 'prompt' || perms.state === 'granted') return TaskIO._ExportToClipboard(data)
 
     // else show text area with text already selected
-    // TODO show prompt
-    console.log(data)
+    TaskIO._ExportToPrompt(data)
+  }
+
+  /**
+   * @returns {Promise<string>}
+   */
+  static async _ImportFromPrompt() {
+    return await new Promise((res, rej) => {
+      promptForTextInput(ret => {
+        if (ret.valid) res(ret.trimmed)
+        else rej()
+      })
+    })
   }
 
   /**
@@ -63,7 +87,10 @@ class TaskIO {
     try {
       return await navigator.clipboard.readText()
     } catch (err) {
-      console.error('Failed to import from clipboard', err)
+      if (err.name === 'NotAllowedError') {
+        return await TaskIO._ImportFromPrompt()
+      }
+      console.error('Import failed', err)
     }
   }
 
@@ -80,6 +107,8 @@ class TaskIO {
     }
 
     // else show empty text area
-    console.log('Prompt for import not yet implemented')
+    const data = await TaskIO._ImportFromPrompt()
+    localStorage.setItem(localStorageKeyName, data)
+    TaskIO.Load()
   }
 }
