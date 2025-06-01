@@ -250,6 +250,20 @@ function promptForTaskName(callback, initial = '', placeholder = '') {
  */
 function promptForColor(callback, initial = '#ff0000') {
   let removed = false
+  let escaped = false
+
+  /**
+   * @param {KeyboardEvent} e 
+   */
+  function windowCallback(e) {
+    if (!removed && e.key === 'Escape') {
+      escaped = true
+      removed = true
+      background.remove()
+    }
+    window.removeEventListener('keydown', windowCallback)
+  }
+  window.addEventListener('keydown', windowCallback)
 
   const background = document.createElement('div')
   background.classList.add('horizontal', 'center', 'overlay')
@@ -477,7 +491,10 @@ class Task {
     this.dom.ul.appendChild(task.createDom())
     this.expand(bubble, false)
 
-    if (save === true) TaskIO.Save()
+    if (save === true) {
+      task.setBackgroundColor(this.style.backgroundColor, false)
+      TaskIO.Save()
+    }
   }
 
   /**
@@ -496,7 +513,10 @@ class Task {
 
     this.createDom().before(task.createDom())
 
-    if (save === true) TaskIO.Save()
+    if (save === true) {
+      task.setBackgroundColor(this.parent.style.backgroundColor, false)
+      TaskIO.Save()
+    }
   }
 
   /**
@@ -515,7 +535,10 @@ class Task {
 
     this.createDom().after(task.createDom())
 
-    if (save === true) TaskIO.Save()
+    if (save === true) {
+      task.setBackgroundColor(this.parent.style.backgroundColor, false)
+      TaskIO.Save()
+    }
   }
 
   /**
@@ -755,10 +778,7 @@ class Task {
       obj.expanded = this.isExpanded()
     }
 
-    if (this.style.backgroundColor !== 'rgb(153, 153, 153)') {
-      obj.backgroundColor = this.style.backgroundColor
-    }
-
+    obj.backgroundColor = this.style.backgroundColor
     return obj
   }
 
