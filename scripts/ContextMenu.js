@@ -20,7 +20,7 @@ class ContextMenu {
   static Current = null
 
   /** @type {number} */
-  static CreationOffset = 7
+  static CreationOffset = 20
 
   /** @type {number} */
   static RemovalCountdown = 0.2
@@ -49,8 +49,8 @@ class ContextMenu {
     document.body.appendChild(menu)
     const bounds = menu.getBoundingClientRect()
 
-    menu.style.left = e.pageX - (e.clientX + bounds.width >= window.innerWidth ? bounds.width : 0) + 'px'
-    menu.style.top = e.pageY - (e.clientY + bounds.height >= window.innerHeight ? bounds.height : 0) + 'px'
+    menu.style.left = e.pageX - (e.clientX + bounds.width >= window.innerWidth - ContextMenu.CreationOffset ? bounds.width : 0) + 'px'
+    menu.style.top = e.pageY - (e.clientY + bounds.height >= window.innerHeight - ContextMenu.CreationOffset ? bounds.height : 0) + 'px'
 
     menu.style.visibility = 'visible'
   }
@@ -174,12 +174,12 @@ class ContextMenu {
     ContextMenu.DestroyCurrent()
 
     const menu = new ContextMenu(e, [
-      new ContextMenuLine('Export tasks', () => {
-        TaskIO.Export()
-        menu.destroy()
-      }),
       new ContextMenuLine('Import tasks', () => {
         TaskIO.Import()
+        menu.destroy()
+      }),
+      new ContextMenuLine('Export tasks', () => {
+        TaskIO.Export()
         menu.destroy()
       }),
     ])
@@ -212,6 +212,14 @@ class ContextMenu {
     }
 
     /**
+     * @param {KeyboardEvent} e 
+     */
+    const windowKeydownCallback = e => {
+      if (ContextMenu.Current === null) return
+      if (e.key === 'Escape') ContextMenu.DestroyCurrent()
+    }
+
+    /**
      * @param {PointerEvent} e 
      */
     const documentContextCallback = e => {
@@ -223,11 +231,13 @@ class ContextMenu {
       documentClickCallback,
       windowContextmenuCallback,
       documentContextCallback,
+      windowKeydownCallback,
     }
 
     document.addEventListener('click', documentClickCallback)
     window.addEventListener('contextmenu', windowContextmenuCallback)
     document.addEventListener('contextmenu', documentContextCallback)
+    window.addEventListener('keydown', windowKeydownCallback)
   }
 
   static DestroyEventListeners() {
@@ -236,6 +246,7 @@ class ContextMenu {
     document.removeEventListener('click', ContextMenu.Listeners.documentClickCallback)
     window.removeEventListener('contextmenu', ContextMenu.Listeners.windowContextmenuCallback)
     document.removeEventListener('contextmenu', ContextMenu.Listeners.documentContextCallback)
+    window.removeEventListener('keydown', ContextMenu.Listeners.windowKeydownCallback)
 
     ContextMenu.Listeners = null
   }
