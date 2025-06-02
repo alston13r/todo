@@ -18,6 +18,7 @@ class Color {
    * @returns {Color}
    */
   set(r, g, b) {
+    if (r === undefined) return this
     if (g === undefined && b === undefined) {
       if (typeof r === 'number') {
         // 0xrrggbb
@@ -245,8 +246,8 @@ class Color {
 
   /**
    * @param {number} h 0 <= H < 360
-   * @param {number} s 0% <= S <= 100%
-   * @param {number} v 0% <= v <= 100%
+   * @param {number} s 0 <= S <= 1
+   * @param {number} v 0 <= v <= 1
    * @returns {Color}
    */
   fromHSV(h, s, v) {
@@ -279,25 +280,26 @@ class Color {
   }
 
   /**
-   * @param {string} str hsl(h, s%, v%)
+   * @param {string} str hsv(h, s%, v%)
    * @returns {Color}
    */
   fromHSVString(str) {
     let m
-    if (m = str.match(/\s*hsl\s*\(\s*(\d+)\s*,\s*(\d+)\s*%\s*,\s*(\d+)\s*%\s*\)\s*$/)) {
+    if (m = str.match(/\s*hsv\s*\(\s*(\d+)\s*,\s*(\d+)\s*%\s*,\s*(\d+)\s*%\s*\)\s*$/)) {
       const h = parseInt(m[1]) // 0 to 360
       const s = parseInt(m[2]) // 0 to 100%
       const v = parseInt(m[3]) // 0 to 100%
-      return this.fromHSV(h, s, v)
+      return this.fromHSV(h, s / 100, v / 100)
     }
 
     return this
   }
 
   /**
-   * @returns {string} hsv(h, s%, v%)
+   * @param {number[]?} arr 
+   * @returns {number[]} [h, s, v]
    */
-  toHSVString() {
+  getHSV(arr = []) {
     const max = Math.max(this.r, this.g, this.b)
     const min = Math.min(this.r, this.g, this.b)
     const delta = max - min
@@ -322,6 +324,42 @@ class Color {
     if (max !== 0) {
       s = delta / max
     }
+
+    arr[0] = h
+    arr[1] = s
+    arr[2] = v
+    return arr
+  }
+
+  /**
+   * @returns {string} hsv(h, s%, v%)
+   */
+  toHSVString() {
+    const [h, s, v] = this.getHSV()
+    // const max = Math.max(this.r, this.g, this.b)
+    // const min = Math.min(this.r, this.g, this.b)
+    // const delta = max - min
+
+    // const v = max
+    // let h = 0
+    // let s = 0
+    // if (delta !== 0) {
+    //   switch (max) {
+    //     case this.r:
+    //       h = 60 * ((this.g - this.b) / delta % 6)
+    //       break
+    //     case this.g:
+    //       h = 60 * ((this.b - this.r) / delta + 2)
+    //       break
+    //     case this.b:
+    //       h = 60 * ((this.r - this.g) / delta + 4)
+    //       break
+    //   }
+    // }
+
+    // if (max !== 0) {
+    //   s = delta / max
+    // }
 
     return `hsv(${h}, ${Math.round(s * 100)}%, ${Math.round(v * 100)}%)`
   }
