@@ -21,30 +21,19 @@ class Color {
     if (r === undefined) return this
     if (g === undefined && b === undefined) {
       if (typeof r === 'number') {
-        // 0xrrggbb
-        // console.log('hex')
         return this.fromHex(r)
       } else if (typeof r === 'string') {
         const str = r.trim()
         if (str.startsWith('#')) {
-          // '#rrggbb'
-          // console.log('hex string')
           return this.fromHexString(str)
         } else if (str.startsWith('rgb')) {
-          // 'rgb(r, g, b)'
-          // console.log('rgb()')
           return this.fromRGBString(str)
         } else if (str.startsWith('hsl')) {
-          // 'hsl(h, s, l)'
-          // console.log('hsl()')
           return this.fromHSLString(str)
         } else if (str.startsWith('hsv')) {
-          // 'hsv(h, s, v)'
-          // console.log('hsv()')
           return this.fromHSVString(str)
         }
       } else if (r instanceof Color) {
-        // Color
         return this.copy(r)
       }
     } else {
@@ -336,31 +325,6 @@ class Color {
    */
   toHSVString() {
     const [h, s, v] = this.getHSV()
-    // const max = Math.max(this.r, this.g, this.b)
-    // const min = Math.min(this.r, this.g, this.b)
-    // const delta = max - min
-
-    // const v = max
-    // let h = 0
-    // let s = 0
-    // if (delta !== 0) {
-    //   switch (max) {
-    //     case this.r:
-    //       h = 60 * ((this.g - this.b) / delta % 6)
-    //       break
-    //     case this.g:
-    //       h = 60 * ((this.b - this.r) / delta + 2)
-    //       break
-    //     case this.b:
-    //       h = 60 * ((this.r - this.g) / delta + 4)
-    //       break
-    //   }
-    // }
-
-    // if (max !== 0) {
-    //   s = delta / max
-    // }
-
     return `hsv(${h}, ${Math.round(s * 100)}%, ${Math.round(v * 100)}%)`
   }
 
