@@ -89,7 +89,7 @@ class ContextMenu {
           if (ret.valid) {
             task.rename(ret.trimmed)
           }
-        }, task.name)
+        }, task.name, task.name)
         menu.destroy()
       }),
       new ContextMenuLine('Change color', () => {
@@ -139,7 +139,7 @@ class ContextMenu {
           if (ret.valid) {
             task.rename(ret.trimmed)
           }
-        }, task.name)
+        }, task.name, task.name)
         menu.destroy()
       }),
       new ContextMenuLine('Change color', () => {
