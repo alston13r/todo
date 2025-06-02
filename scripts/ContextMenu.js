@@ -109,8 +109,6 @@ class ContextMenu {
         const [r, g, b] = bg.match(/\d+/g).map(Number).map(v => ensureLength(v))
         const bgFormatted = '#' + r + g + b
 
-        console.log('set color', bgFormatted, r, g, b) // TODO remove
-
         promptForColor(ret => {
           task.setBackgroundColor(ret.picked)
         }, bgFormatted)
@@ -160,8 +158,6 @@ class ContextMenu {
 
         const [r, g, b] = bg.match(/\d+/g).map(Number).map(v => ensureLength(v))
         const bgFormatted = '#' + r + g + b
-
-        console.log('set color', bgFormatted, r, g, b) // TODO remove
 
         promptForColor(ret => {
           task.setBackgroundColor(ret.picked)
