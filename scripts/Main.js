@@ -246,18 +246,16 @@ function promptForTaskName(callback, initial = '', placeholder = '') {
 
 /**
  * @param {(ret: {original: string, picked: string}) => void} callback 
- * @param {string} [initial='#ff0000'] 
+ * @param {string} initial
  */
-function promptForColor(callback, initial = '#ff0000') {
+function promptForColor(callback, initial) {
   let removed = false
-  let escaped = false
 
   /**
    * @param {KeyboardEvent} e 
    */
   function windowCallback(e) {
     if (!removed && e.key === 'Escape') {
-      escaped = true
       removed = true
       background.remove()
     }
@@ -270,15 +268,13 @@ function promptForColor(callback, initial = '#ff0000') {
 
   const aligner = document.createElement('div')
   aligner.classList.add('vertical', 'center')
+  aligner.style.gap = '20px'
   background.appendChild(aligner)
 
-  const colorInput = document.createElement('input')
-  colorInput.classList.add('sleek')
-  colorInput.type = 'color'
-  colorInput.value = initial
+  const colorPicker = new ColorPicker()
 
   const colorSubmit = document.createElement('button')
-  colorSubmit.classList.add('sleek')
+  colorSubmit.classList.add('button-27')
   colorSubmit.addEventListener('click', () => {
     if (!removed) {
       removed = true
@@ -286,13 +282,15 @@ function promptForColor(callback, initial = '#ff0000') {
     }
 
     const original = initial
-    const picked = colorInput.value
+    const picked = colorPicker.getCurrentColor()
     callback({ original, picked })
   })
-  colorSubmit.innerText = 'Submit color'
+  colorSubmit.innerText = 'Submit new color'
 
-  aligner.append(colorInput, colorSubmit)
+  colorPicker.appendTo(aligner)
+  aligner.append(colorSubmit)
   document.body.appendChild(background)
+  colorPicker.initialize(initial)
 }
 
 /**
