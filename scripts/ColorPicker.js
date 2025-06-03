@@ -6,6 +6,53 @@ class ColorPicker extends EventTarget {
   constructor(title = 'Color picker') {
     super()
 
+    this.addEventListener('dropperchange-palette', e => {
+      /** @type {MouseEvent} */
+      const event = e.detail.event
+
+      const bounds = this.paletteContainer.getBoundingClientRect()
+      const u = clamp(event.clientX - bounds.x, bounds.width) / bounds.width
+      const v = clamp(event.clientY - bounds.y, bounds.height) / bounds.height
+
+      this.setDropperPosPalette(u, v)
+      this.setSV(u, 1 - v)
+
+      this.updateConversionFields()
+    })
+
+    this.addEventListener('dropperchange-slider', e => {
+      const event = e.detail.event
+
+      if (event instanceof WheelEvent) {
+
+        const newHue = clamp(this.hue + e.detail.scrollDir, 360)
+        this.setHue(newHue)
+        this.setDropperPosSlider(newHue / 360)
+
+      }
+
+      else if (event instanceof MouseEvent) {
+
+        const bounds = hueSlider.getBoundingClientRect()
+        const t = clamp(event.clientX - bounds.x, bounds.width) / bounds.width
+
+        this.setDropperPosSlider(t)
+        this.setHue(t * 360)
+
+      }
+
+      this.updateConversionFields()
+    })
+
+    // [ ] whenever a field changes, update the rest of the fields and the palette
+    // [X] whenever the palette changes, update the fields
+
+    this.addEventListener('fieldchange-hex', console.log)
+    this.addEventListener('fieldchange-rgb', console.log)
+    this.addEventListener('fieldchange-hsv', console.log)
+    this.addEventListener('fieldchange-hsl', console.log)
+    this.addEventListener('fieldchange-cmyk', console.log)
+
     const colorPickerContainer = document.createElement('div')
     colorPickerContainer.classList.add('color-picker-container', 'vertical', 'center')
 
@@ -62,9 +109,12 @@ class ColorPicker extends EventTarget {
       legend.innerText = 'HEX'
       const input = document.createElement('input')
       input.type = 'text'
-      input.placeholder = 'placeholder' // TODO remove
+      input.addEventListener('input', () => {
+        this.dispatchEvent(new CustomEvent('fieldchange-hex', { detail: { value: input.value } }))
+      })
       fieldset.append(legend, input)
       conversionHexContainer.appendChild(fieldset)
+      this.fieldHEX = input
     }
 
     const conversionRGBContainer = document.createElement('div')
@@ -77,9 +127,12 @@ class ColorPicker extends EventTarget {
       legend.innerText = 'RGB'
       const input = document.createElement('input')
       input.type = 'text'
-      input.placeholder = 'placeholder' // TODO remove
+      input.addEventListener('input', () => {
+        this.dispatchEvent(new CustomEvent('fieldchange-rgb', { detail: { value: input.value } }))
+      })
       fieldset.append(legend, input)
       conversionRGBContainer.appendChild(fieldset)
+      this.fieldRGB = input
     }
 
     const conversionCMYKContainer = document.createElement('div')
@@ -92,9 +145,12 @@ class ColorPicker extends EventTarget {
       legend.innerText = 'CMYK'
       const input = document.createElement('input')
       input.type = 'text'
-      input.placeholder = 'placeholder' // TODO remove
+      input.addEventListener('input', () => {
+        this.dispatchEvent(new CustomEvent('fieldchange-cmyk', { detail: { value: input.value } }))
+      })
       fieldset.append(legend, input)
       conversionCMYKContainer.appendChild(fieldset)
+      this.fieldCMYK = input
     }
 
     const conversionHSVContainer = document.createElement('div')
@@ -107,9 +163,12 @@ class ColorPicker extends EventTarget {
       legend.innerText = 'HSV'
       const input = document.createElement('input')
       input.type = 'text'
-      input.placeholder = 'placeholder' // TODO remove
+      input.addEventListener('input', () => {
+        this.dispatchEvent(new CustomEvent('fieldchange-hsv', { detail: { value: input.value } }))
+      })
       fieldset.append(legend, input)
       conversionHSVContainer.appendChild(fieldset)
+      this.fieldHSV = input
     }
 
     const conversionHSLContainer = document.createElement('div')
@@ -122,9 +181,12 @@ class ColorPicker extends EventTarget {
       legend.innerText = 'HSL'
       const input = document.createElement('input')
       input.type = 'text'
-      input.placeholder = 'placeholder' // TODO remove
+      input.addEventListener('input', () => {
+        this.dispatchEvent(new CustomEvent('fieldchange-hsl', { detail: { value: input.value } }))
+      })
       fieldset.append(legend, input)
       conversionHSLContainer.appendChild(fieldset)
+      this.fieldHSL = input
     }
 
     this.element = colorPickerContainer
@@ -144,28 +206,11 @@ class ColorPicker extends EventTarget {
 
       paletteContainer.addEventListener('mousedown', e => {
         movingDropper = true
-
-        const bounds = paletteContainer.getBoundingClientRect()
-
-        const ox = clamp(e.clientX - bounds.x, bounds.width)
-        const oy = clamp(e.clientY - bounds.y, bounds.height)
-        this.setPaletteDropperPos(ox, oy)
-
-        const u = clamp(ox / bounds.width) // saturation
-        const v = clamp(1 - (oy / bounds.height)) // value
-        this.setSV(u, v)
+        this.dispatchEvent(new CustomEvent('dropperchange-palette', { detail: { event: e } }))
       })
 
       paletteContainer.addEventListener('mouseup', e => {
-        const bounds = paletteContainer.getBoundingClientRect()
-
-        const ox = clamp(e.clientX - bounds.x, bounds.width)
-        const oy = clamp(e.clientY - bounds.y, bounds.height)
-        this.setPaletteDropperPos(ox, oy)
-
-        const u = clamp(ox / bounds.width) // saturation
-        const v = clamp(1 - (oy / bounds.height)) // value
-        this.setSV(u, v)
+        this.dispatchEvent(new CustomEvent('dropperchange-palette', { detail: { event: e } }))
       })
 
       window.addEventListener('mouseup', () => {
@@ -180,15 +225,7 @@ class ColorPicker extends EventTarget {
 
       window.addEventListener('mousemove', e => {
         if (movingDropper) {
-          const bounds = paletteContainer.getBoundingClientRect()
-
-          const ox = clamp(e.clientX - bounds.x, bounds.width)
-          const oy = clamp(e.clientY - bounds.y, bounds.height)
-          this.setPaletteDropperPos(ox, oy)
-
-          const u = clamp(ox / bounds.width) // saturation
-          const v = clamp(1 - (oy / bounds.height)) // value
-          this.setSV(u, v)
+          this.dispatchEvent(new CustomEvent('dropperchange-palette', { detail: { event: e } }))
         }
       })
     }
@@ -198,40 +235,18 @@ class ColorPicker extends EventTarget {
       let movingDropper = false
 
       hueSlider.addEventListener('mousedown', e => {
-        // movingDropper = true
-
-        const bounds = hueSlider.getBoundingClientRect()
-
-        const ox = clamp(e.clientX - bounds.x, bounds.width)
-        this.setHueDropperPos(ox)
-
-        const hue = clamp(ox / bounds.width)
-        this.setHue(hue * 360)
+        this.dispatchEvent(new CustomEvent('dropperchange-slider', { detail: { event: e } }))
       })
 
       hueDropper.addEventListener('mousedown', e => {
         movingDropper = true
-
-        const bounds = hueSlider.getBoundingClientRect()
-
-        const ox = clamp(e.clientX - bounds.x, bounds.width)
-        this.setHueDropperPos(ox)
-
-        const hue = clamp(ox / bounds.width)
-        this.setHue(hue * 360)
+        this.dispatchEvent(new CustomEvent('dropperchange-slider', { detail: { event: e } }))
       })
 
       hueSlider.addEventListener('mouseup', e => {
         if (!movingDropper) return
         movingDropper = false
-
-        const bounds = hueSlider.getBoundingClientRect()
-
-        const ox = clamp(e.clientX - bounds.x, bounds.width)
-        this.setHueDropperPos(ox)
-
-        const hue = clamp(ox / bounds.width)
-        this.setHue(hue * 360)
+        this.dispatchEvent(new CustomEvent('dropperchange-slider', { detail: { event: e } }))
       })
 
       window.addEventListener('mouseup', () => {
@@ -246,13 +261,7 @@ class ColorPicker extends EventTarget {
 
       window.addEventListener('mousemove', e => {
         if (movingDropper) {
-          const bounds = hueSlider.getBoundingClientRect()
-
-          const ox = clamp(e.clientX - bounds.x, bounds.width)
-          this.setHueDropperPos(ox)
-
-          const hue = clamp(ox / bounds.width)
-          this.setHue(hue * 360)
+          this.dispatchEvent(new CustomEvent('dropperchange-slider', { detail: { event: e } }))
         }
       })
 
@@ -262,14 +271,64 @@ class ColorPicker extends EventTarget {
         const scrollDir = Math.sign(e.deltaY)
         if (this.hue === 0 && scrollDir < 0) return
         if (this.hue === 360 && scrollDir > 0) return
-        const newHue = clamp(this.hue + scrollDir, 360, 0)
-        this.setHue(newHue)
 
-        const bounds = hueSlider.getBoundingClientRect()
-        const ox = clamp(bounds.width * newHue / 360, bounds.width)
-        this.setHueDropperPos(ox)
+        this.dispatchEvent(new CustomEvent('dropperchange-slider', { detail: { event: e, scrollDir } }))
       })
     }
+  }
+
+  /**
+   * @param {'HEX' | 'RGB' | 'CMYK' | 'HSV' | 'HSL' | ''} [exclude=''] 
+   */
+  updateConversionFields(exclude = '') {
+    const c = new Color(this.getCurrentColor())
+
+    if (exclude !== 'HEX') {
+      this.fieldHEX.value = c.toHexString()
+    }
+
+    if (exclude !== 'RGB') {
+      let s = c.toRGBString()
+      this.fieldRGB.value = s.substring(4, s.length - 1)
+    }
+
+    if (exclude !== 'CMYK') {
+      let s = c.toCMYKString()
+      this.fieldCMYK.value = s.substring(5, s.length - 1)
+    }
+
+    if (exclude !== 'HSV') {
+      let s = c.toHSVString(true)
+      this.fieldHSV.value = s.substring(4, s.length - 1)
+    }
+
+    if (exclude !== 'HSL') {
+      let s = c.toHSLString(true)
+      this.fieldHSL.value = s.substring(4, s.length - 1)
+    }
+  }
+
+  /**
+   * @param {number} u 0 <= u (left) <= 1
+   * @param {number} v 0 <= v (top) <= 1
+   */
+  setDropperPosPalette(u, v) {
+    const dropperBounds = this.paletteDropper.getBoundingClientRect()
+    const paletteBounds = this.paletteContainer.getBoundingClientRect()
+
+    this.paletteDropper.style.left = (u * paletteBounds.width - dropperBounds.width / 2) + 'px'
+    this.paletteDropper.style.top = (v * paletteBounds.height - dropperBounds.height / 2) + 'px'
+  }
+
+  /**
+   * @param {number} t 0 <= t (left) <= 1
+   */
+  setDropperPosSlider(t) {
+    const dropperBounds = this.hueDropper.getBoundingClientRect()
+    const sliderBounds = this.hueSlider.getBoundingClientRect()
+
+    this.hueDropper.style.left = (t * sliderBounds.width - dropperBounds.width / 2) + 'px'
+    this.hueDropper.style.top = (sliderBounds.height / 2 - dropperBounds.height / 2) + 'px'
   }
 
   setPaletteDropperPos(x, y) {
@@ -287,18 +346,13 @@ class ColorPicker extends EventTarget {
 
   /**
    * @param {number} hue 0 <= hue < 360
+   * @param {boolean?} [setsv=true] whether or not to also call this.setSV
    */
-  setHue(hue) {
+  setHue(hue, setsv = true) {
     this.hue = hue
     this.backgroundHue.style.setProperty('--hue', hue % 360)
     this.hueDropper.style.backgroundColor = `hsl(${hue % 360}, 100%, 50%)`
-    this.setSV(...this.lastSV)
-
-    this.dispatchEvent(new CustomEvent('colorchange', {
-      detail: {
-        newColor: new Color().fromHSV(this.hue % 360, ...this.lastSV).toHexString()
-      }
-    }))
+    if (setsv === true) this.setSV(...this.lastSV)
   }
 
   /**
@@ -306,18 +360,12 @@ class ColorPicker extends EventTarget {
    * @param {number} value 0 <= value <= 1
    */
   setSV(saturation, value) {
-    const c = new Color().fromHSV(this.hue % 360, saturation, value)
+    const c = new Color().fromHSV(this.hue, saturation, value)
     const str = c.toHSLString()
     this.paletteDropper.style.backgroundColor = str
     this.colorDisplay.style.backgroundColor = str
     this.lastSV[0] = saturation
     this.lastSV[1] = value
-
-    this.dispatchEvent(new CustomEvent('colorchange', {
-      detail: {
-        newColor: new Color().fromHSV(this.hue % 360, ...this.lastSV).toHexString()
-      }
-    }))
   }
 
   /**
@@ -331,7 +379,7 @@ class ColorPicker extends EventTarget {
     const c = new Color(initialColor)
     const [h, s, v] = c.getHSV()
 
-    this.setHue(h)
+    this.setHue(h, false)
     this.setSV(s, v)
     this.setPaletteDropperPos(paletteBounds.width * s, paletteBounds.height * (1 - v))
     this.setHueDropperPos(sliderBounds.width * h / 360)
@@ -349,7 +397,7 @@ class ColorPicker extends EventTarget {
   }
 
   /**
-   * @returns {string} rgb(r, g, b)
+   * @returns {string} rgb(red, green, blue)
    */
   getCurrentColor() {
     return this.colorDisplay.style.backgroundColor
