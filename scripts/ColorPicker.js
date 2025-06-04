@@ -1,3 +1,9 @@
+/**
+ * @param {number} x 
+ * @param {number} [max=1] 
+ * @param {number} [min=0] 
+ * @returns {number} x clamped between min and max, inclusive
+ */
 function clamp(x, max = 1, min = 0) {
   return Math.min(max, Math.max(min, x))
 }
