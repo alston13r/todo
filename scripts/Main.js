@@ -226,6 +226,10 @@ function promptForColor(callback, initial) {
 
   const colorPicker = new ColorPicker()
 
+  const buttonContainer = document.createElement('div')
+  buttonContainer.classList.add('horizontal')
+  buttonContainer.style.gap = '20px'
+
   const colorSubmit = document.createElement('button')
   colorSubmit.classList.add('button-27')
   colorSubmit.addEventListener('click', () => {
@@ -240,8 +244,20 @@ function promptForColor(callback, initial) {
   })
   colorSubmit.innerText = 'Submit new color'
 
+  const colorCancel = document.createElement('button')
+  colorCancel.classList.add('button-27')
+  colorCancel.addEventListener('click', () => {
+    if (!removed) {
+      removed = true
+      background.remove()
+    }
+  })
+  colorCancel.innerText = 'Cancel'
+
+  buttonContainer.append(colorSubmit, colorCancel)
+
   colorPicker.appendTo(aligner)
-  aligner.append(colorSubmit)
+  aligner.append(buttonContainer)
   document.body.appendChild(background)
   colorPicker.initialize(initial)
 }
