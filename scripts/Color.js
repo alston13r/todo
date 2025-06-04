@@ -1,4 +1,39 @@
 /**
+ * @param {number} r 0 <= red <= 1
+ * @param {number} g 0 <= green <= 1
+ * @param {number} b 0 <= blue <= 1
+ * @returns {'black' | 'white'}
+ */
+function GetTextColor(r, g, b) {
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luminance > 0.5 ? 'black' : 'white'
+}
+
+/**
+ * @param {number} r 0 <= red <= 1
+ * @param {number} g 0 <= green <= 1
+ * @param {number} b 0 <= blue <= 1
+ * @param {number} [amount=0.2] 
+ * @param {number[]?} arr
+ * @returns {number[]} 20% darkened by HSL [0 <= red <= 1, 0 <= green <= 1, 0 <= blue <= 1]
+ */
+function DarkenColor(r, g, b, amount = 0.2, arr = []) {
+  const vals = RGBToHSL(r, g, b)
+  arr[0] = vals[0]
+  arr[1] = vals[1]
+  arr[2] = clamp(vals[2] - amount)
+  return HSLToRGB(...arr, arr)
+}
+
+
+
+
+
+
+
+
+
+/**
  * @param {number} h 0 <= hue < 360
  * @param {number} s 0 <= saturation <= 1
  * @param {number} v 0 <= value <= 1
@@ -216,22 +251,80 @@ function RGBToHexString(r = 0, g = 0, b = 0) {
 }
 
 /**
- * @param {string} str #RRGGBB
+ * @param {string} str #RRGGBB or #RGB
  * @param {number[]?} arr 
  * @returns {number[]} [0 <= red <= 1, 0 <= green <= 1, 0 <= blue <= 1]
  */
 function HexStringToRGB(str, arr = []) {
-  const rs = str.substring(1, 3)
-  const gs = str.substring(3, 5)
-  const bs = str.substring(5, 7)
+  arr[0] = 0
+  arr[1] = 0
+  arr[2] = 0
 
-  const rv = parseInt(rs, 16) / 255
-  const gv = parseInt(gs, 16) / 255
-  const bv = parseInt(bs, 16) / 255
+  if (str.startsWith('#')) {
+    if (str.length === 7) {
+      const rs = str.substring(1, 3)
+      const gs = str.substring(3, 5)
+      const bs = str.substring(5, 7)
 
-  arr[0] = rv
-  arr[1] = gv
-  arr[2] = bv
+      const rv = parseInt(rs, 16) / 255
+      const gv = parseInt(gs, 16) / 255
+      const bv = parseInt(bs, 16) / 255
+
+      arr[0] = rv
+      arr[1] = gv
+      arr[2] = bv
+
+      return arr
+    }
+
+    if (str.length === 4) {
+      const rs = str[1].repeat(2)
+      const gs = str[2].repeat(2)
+      const bs = str[3].repeat(2)
+
+      const rv = parseInt(rs, 16) / 255
+      const gv = parseInt(gs, 16) / 255
+      const bv = parseInt(bs, 16) / 255
+
+      arr[0] = rv
+      arr[1] = gv
+      arr[2] = bv
+
+      return arr
+    }
+  }
+
+  if (str.length === 6) {
+    const rs = str.substring(0, 2)
+    const gs = str.substring(2, 4)
+    const bs = str.substring(4, 6)
+
+    const rv = parseInt(rs, 16) / 255
+    const gv = parseInt(gs, 16) / 255
+    const bv = parseInt(bs, 16) / 255
+
+    arr[0] = rv
+    arr[1] = gv
+    arr[2] = bv
+
+    return arr
+  }
+
+  if (str.length === 3) {
+    const rs = str[0].repeat(2)
+    const gs = str[1].repeat(2)
+    const bs = str[2].repeat(2)
+
+    const rv = parseInt(rs, 16) / 255
+    const gv = parseInt(gs, 16) / 255
+    const bv = parseInt(bs, 16) / 255
+
+    arr[0] = rv
+    arr[1] = gv
+    arr[2] = bv
+
+    return arr
+  }
 
   return arr
 }
