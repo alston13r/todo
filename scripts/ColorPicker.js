@@ -241,11 +241,18 @@ class ColorPicker extends EventTarget {
       let movingDropper = false
 
       hueSlider.addEventListener('mousedown', e => {
+        e.stopPropagation()
         this.dispatchEvent(new CustomEvent('dropperchange-slider', { detail: { event: e } }))
       })
 
       hueDropper.addEventListener('mousedown', e => {
+        e.stopPropagation()
         movingDropper = true
+        this.dispatchEvent(new CustomEvent('dropperchange-slider', { detail: { event: e } }))
+      })
+
+      sliderContainer.addEventListener('mousedown', e => {
+        e.stopPropagation()
         this.dispatchEvent(new CustomEvent('dropperchange-slider', { detail: { event: e } }))
       })
 
