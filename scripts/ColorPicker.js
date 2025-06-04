@@ -344,19 +344,6 @@ class ColorPicker extends EventTarget {
     this.hueDropper.style.top = (sliderBounds.height / 2 - dropperBounds.height / 2) + 'px'
   }
 
-  setPaletteDropperPos(x, y) {
-    const bounds = this.paletteDropper.getBoundingClientRect()
-    this.paletteDropper.style.left = (x - bounds.width / 2) + 'px'
-    this.paletteDropper.style.top = (y - bounds.height / 2) + 'px'
-  }
-
-  setHueDropperPos(x) {
-    const bounds = this.hueDropper.getBoundingClientRect()
-    const sliderBounds = this.hueSlider.getBoundingClientRect()
-    this.hueDropper.style.left = (x - bounds.width / 2) + 'px'
-    this.hueDropper.style.top = (sliderBounds.height / 2 - bounds.height / 2) + 'px'
-  }
-
   /**
    * @param {number} hue 0 <= hue < 360
    * @param {boolean?} [setsv=true] whether or not to also call this.setSV
@@ -386,16 +373,13 @@ class ColorPicker extends EventTarget {
    * @returns {ColorPicker}
    */
   initialize(initialColor = 'rgb(204, 40, 40)') {
-    const paletteBounds = this.paletteContainer.getBoundingClientRect()
-    const sliderBounds = this.hueSlider.getBoundingClientRect()
-
     const c = new Color(initialColor)
     const [h, s, v] = c.getHSV()
 
     this.setHue(h, false)
     this.setSV(s, v)
-    this.setPaletteDropperPos(paletteBounds.width * s, paletteBounds.height * (1 - v))
-    this.setHueDropperPos(sliderBounds.width * h / 360)
+    this.setDropperPosPalette(s, 1 - v)
+    this.setDropperPosSlider(h / 360)
 
     return this
   }
