@@ -13,67 +13,7 @@ function createRandomName(prefix = '', suffix = '') {
 
 
 
-/**
- * @param {string} rgb rgb(r, g, b)
- * @param {number} amount 
- * @returns {string} hsl(h, s%, l%)
- */
-function darkenColor(rgb, amount = 0.2) {
-  const [r, g, b] = rgb.match(/\d+/g).map(Number)
-  const hsl = rgbToHsl(r, g, b)
 
-  hsl[2] = Math.max(0, hsl[2] - amount)
-
-  return `hsl(${Math.round(hsl[0] * 360)}, ${Math.round(hsl[1] * 100)}%, ${Math.round(hsl[2] * 100)}%)`
-}
-
-/**
- * @param {number} r 0-255
- * @param {number} g 0-255
- * @param {number} b 0-255
- * @returns {[number, number, number]}
- */
-function rgbToHsl(r, g, b) {
-  r /= 255
-  g /= 255
-  b /= 255
-
-  const max = Math.max(r, g, b)
-  const min = Math.min(r, g, b)
-  let h, s, l = (max + min) / 2
-
-  if (max === min) {
-    h = s = 0
-  } else {
-    const d = max - min
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
-    switch (max) {
-      case r:
-        h = ((g - b) / d + (g < b ? 6 : 0))
-        break
-      case g:
-        h = ((b - r) / d + 2)
-        break
-      case b:
-        h = ((r - g) / d + 4)
-        break
-    }
-    h /= 6
-  }
-
-  return [h, s, l]
-}
-
-/**
- * @param {number} r 
- * @param {number} g 
- * @param {number} b 
- * @returns {'black' | 'white'}
- */
-function getTextColor(r, g, b) {
-  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  return luminance > 128 ? 'black' : 'white'
-}
 
 
 
@@ -742,30 +682,22 @@ class Task {
   setBackgroundColor(newColor = '', save = true) {
     if (!this.builtDom) return
 
-    if (newColor.length > 0) {
-      // set background color
-      this.dom.span.style.backgroundColor = newColor
-    } else {
-      this.dom.span.style.backgroundColor = this.style.backgroundColor
-    }
-
-    // get rgb(r, g, b)
-    const rgbString = getComputedStyle(this.dom.span).backgroundColor
-    const [r, g, b] = rgbString.match(/\d+/g).map(Number)
+    const c = newColor.length > 0 ? new Color(newColor) : new Color(this.style.backgroundColor)
+    const str = c.toRGBString()
 
     // ensure style is updated
-    this.style.backgroundColor = rgbString
+    this.style.backgroundColor = str
 
-    if (save === true) TaskIO.Save()
-
-    // get darkened hsl(h, s%, l%)
-    const hsl = darkenColor(rgbString)
+    // set background color
+    this.dom.span.style.backgroundColor = str
 
     // set border color
-    this.dom.span.style.borderColor = hsl
+    this.dom.span.style.borderColor = RGBToRGBString(...DarkenColor(c.r, c.g, c.b))
 
     // set text color
-    this.dom.span.style.color = getTextColor(r, g, b)
+    this.dom.span.style.color = GetTextColor(c.r, c.g, c.b)
+
+    if (save === true) TaskIO.Save()
   }
 
   /**
