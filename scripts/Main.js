@@ -13,21 +13,6 @@ function createRandomName(prefix = '', suffix = '') {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /** @type {Map<Task, Object>} */
 const taskToButtonsMap = new Map()
 
@@ -132,23 +117,6 @@ function addCreationButtonsToTask(task) {
     marked: false
   })
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -371,11 +339,12 @@ class Task {
     if (!this.builtDom) return
 
     if (!this.isGroup()) {
+      const old = this._expanded
       this._expanded = false
       this.hideIcon()
       this.dom.icon.classList.remove('down')
       this.dom.ul.classList.remove('active')
-      if (save === true) TaskIO.Save()
+      if (save === true && old) TaskIO.Save()
       return
     }
 
