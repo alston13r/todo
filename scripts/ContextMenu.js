@@ -15,6 +15,101 @@ class ContextMenuLine {
   }
 }
 
+class TaskPrompt {
+  /**
+   * @param {Task} task 
+   */
+  constructor(task) {
+    let escaped = false
+    let removed = false
+
+    const span = document.createElement('span')
+    span.style.whiteSpace = 'pre'
+    span.style.visibility = 'hidden'
+
+    const taskName = task.name
+    const input = document.createElement('input')
+    input.classList.add('new-input')
+
+    const style = getComputedStyle(task.dom.span)
+    input.style.font = style.font
+    input.style.color = style.color
+
+    input.style.caretColor = style.color
+
+    /**
+     * @param {string} text 
+     */
+    function updateWidth(text) {
+      document.body.appendChild(span)
+
+      if (text.length === 0) span.textContent = task.name
+      else span.textContent = text
+
+      const width = span.offsetWidth
+      input.style.width = width + 'px'
+
+      span.remove()
+    }
+
+    input.name = createRandomName('input-')
+    input.value = taskName
+    input.placeholder = taskName
+    task.dom.text.replaceWith(input)
+    task.dom.text = null
+    input.focus()
+
+    updateWidth(task.name)
+
+    input.addEventListener('click', e => {
+      e.stopPropagation()
+    })
+    function windowClick() {
+      if (!removed) {
+        removed = true
+        const text = document.createTextNode(taskName)
+        input.replaceWith(text)
+        task.dom.text = text
+      }
+      window.removeEventListener('click', windowClick)
+    }
+
+    input.addEventListener('input', () => {
+      updateWidth(input.value)
+    })
+
+    input.addEventListener('change', () => {
+      window.removeEventListener('click', windowClick)
+      if (!removed) removed = true
+      if (escaped) return
+
+      const original = input.value
+      const trimmed = original.trim()
+      const valid = trimmed.length > 0
+
+      const text = document.createTextNode(valid ? trimmed : taskName)
+      if (valid) task.name = trimmed
+      task.dom.text = text
+
+      input.replaceWith(text)
+      task.dom.text = text
+    })
+
+    input.addEventListener('keydown', e => {
+      if (!removed && e.key === 'Escape') {
+        window.removeEventListener('click', windowClick)
+        escaped = true
+        removed = true
+        const text = document.createTextNode(taskName)
+        input.replaceWith(text)
+        task.dom.text = text
+      }
+    })
+
+    window.addEventListener('click', windowClick)
+  }
+}
+
 class ContextMenu {
   /** @type {ContextMenu} */
   static Current = null
@@ -36,6 +131,7 @@ class ContextMenu {
     this.timeout = null
 
     const menu = document.createElement('ul')
+    menu.addEventListener('click', e => e.stopPropagation())
     this.domElement = menu
     menu.classList.add('ctx-menu')
 
@@ -85,11 +181,7 @@ class ContextMenu {
 
     const menu = new ContextMenu(e, [
       new ContextMenuLine('Rename', () => {
-        PromptForTaskName(ret => {
-          if (ret.valid) {
-            task.rename(ret.trimmed)
-          }
-        }, task.name, task.name)
+        new TaskPrompt(task)
         menu.destroy()
       }),
       new ContextMenuLine('Change color', () => {
