@@ -8,6 +8,194 @@ function clamp(x, max = 1, min = 0) {
   return Math.min(max, Math.max(min, x))
 }
 
+class Validator {
+  /**
+   * @param {HTMLInputElement} input 
+   * @param {string} initial 
+   */
+  constructor(input, initial) {
+    this.isValidator = true
+
+    this.input = input
+    this.lastValid = initial
+  }
+
+  /**
+   * @returns {Color | null}
+   */
+  validate() {
+    return null
+  }
+
+  onBlur() {
+    this.input.value = this.lastValid
+  }
+}
+
+// class SingleRegexValidator extends Validator {
+//   /**
+//    * @param {HTMLInputElement} input 
+//    * @param {string} initial 
+//    */
+//   constructor(input, initial) {
+//     super(input, initial)
+//     this.isSingleRegexValidator = true
+//     this.regex = /.*/i
+//   }
+
+//   validate() {
+//     const m = this.inpu
+//     return this.input.value.match
+//   }
+// }
+
+class RGBValidator extends Validator {
+  static Regex = /\s*(?:rgb\()?\s*(?<red>\d{1,3})\s*,\s*(?<green>\d{1,3})\s*,\s*(?<blue>\d{1,3})\s*\)?\s*$/i
+
+  /**
+   * @param {HTMLInputElement} input 
+   * @param {string} initial 
+   */
+  constructor(input, initial) {
+    super(input, initial)
+    this.isRGBValidator = true
+
+    this.regex = RGBValidator.Regex
+  }
+
+  /**
+   * @returns {Color | null}
+   */
+  validate() {
+    const m = this.input.value.match(this.regex)
+    if (m === null) return null
+
+    const c = new Color(`rgb(${m[0]})`)
+
+    const r = Math.floor(c.r * 255)
+    const g = Math.floor(c.g * 255)
+    const b = Math.floor(c.b * 255)
+    this.lastValid = `${r}, ${g}, ${b}`
+
+    return c
+  }
+}
+
+class HSVValidator extends Validator {
+  static Regex = /\s*(?:hsv\()?\s*(?<hue>\d+(?:\.\d+)?)°?\s*,\s*(?<saturation>(?:\d+(?:\.\d+)?%)|(?:0(?:\.0+)?|1(?:\.0+)?|0?\.\d+))\s*,\s*(?<value>(?:\d+(?:\.\d+)?%)|(?:0(?:\.0+)?|1(?:\.0+)?|0?\.\d+))\s*\)?\s*$/i
+
+  /**
+   * @param {HTMLInputElement} input 
+   * @param {string} initial 
+   */
+  constructor(input, initial) {
+    super(input, initial)
+    this.isHSVValidator = true
+
+    this.regex = HSVValidator.Regex
+  }
+
+  /**
+   * @returns {Color | null}
+   */
+  validate() {
+    const m = this.input.value.match(this.regex)
+    if (m === null) return null
+
+    const c = new Color(`hsv(${m[0]})`)
+    const [h, s, v] = RGBToHSV(c.r, c.g, c.b)
+    this.lastValid = `${h}°, ${Math.floor(s * 100)}%, ${Math.floor(v * 100)}%`
+
+    return c
+  }
+}
+
+class HSLValidator extends Validator {
+  static Regex = /\s*(?:hsl\()?\s*(?<hue>\d+(?:\.\d+)?)°?\s*,\s*(?<saturation>(?:\d+(?:\.\d+)?%)|(?:0(?:\.0+)?|1(?:\.0+)?|0?\.\d+))\s*,\s*(?<light>(?:\d+(?:\.\d+)?%)|(?:0(?:\.0+)?|1(?:\.0+)?|0?\.\d+))\s*\)?\s*$/i
+
+  /**
+   * @param {HTMLInputElement} input 
+   * @param {string} initial 
+   */
+  constructor(input, initial) {
+    super(input, initial)
+    this.isHSLValidator = true
+
+    this.regex = HSLValidator.Regex
+  }
+
+  /**
+   * @returns {Color | null}
+   */
+  validate() {
+    const m = this.input.value.match(this.regex)
+    if (m === null) return null
+
+    const c = new Color(`hsl(${m[0]})`)
+    const [h, s, l] = RGBToHSL(c.r, c.g, c.b)
+    this.lastValid = `${h}°, ${Math.floor(s * 100)}%, ${Math.floor(l * 100)}%`
+
+    return c
+  }
+}
+
+class CMYKValidator extends Validator {
+  static Regex = /\s*(?:cmyk\()?\s*(?<cyan>(?:\d+(?:\.\d+)?%)|(?:0(?:\.0+)?|1(?:\.0+)?|0?\.\d+))\s*,\s*(?<magenta>(?:\d+(?:\.\d+)?%)|(?:0(?:\.0+)?|1(?:\.0+)?|0?\.\d+))\s*,\s*(?<yellow>(?:\d+(?:\.\d+)?%)|(?:0(?:\.0+)?|1(?:\.0+)?|0?\.\d+))\s*,\s*(?<black>(?:\d+(?:\.\d+)?%)|(?:0(?:\.0+)?|1(?:\.0+)?|0?\.\d+))\s*\)?\s*$/i
+
+  /**
+   * @param {HTMLInputElement} input 
+   * @param {string} initial 
+   */
+  constructor(input, initial) {
+    super(input, initial)
+    this.isCMYKValidator = true
+
+    this.regex = CMYKValidator.Regex
+  }
+
+  /**
+   * @returns {Color | null}
+   */
+  validate() {
+    const m = this.input.value.match(this.regex)
+    if (m === null) return null
+
+    const c = new Color(`cmyk(${m[0]})`)
+    const [cyan, magenta, yellow, black] = RGBToCMYK(c.r, c.g, c.b)
+    this.lastValid = `${Math.floor(cyan * 100)}%, ${Math.floor(magenta * 100)}%, ${Math.floor(yellow * 100)}%, ${Math.floor(black * 100)}%`
+
+    return c
+  }
+}
+
+class HexValidator extends Validator {
+  static Regex = /\s*#?(?:(?:(?<red>[0-9a-f]{2})(?<green>[0-9a-f]{2})(?<blue>[0-9a-f]{2}))|(?:(?<red>[0-9a-f])(?<green>[0-9a-f])(?<blue>[0-9a-f])))\s*$/i
+
+  /**
+   * @param {HTMLInputElement} input 
+   * @param {string} initial 
+   */
+  constructor(input, initial) {
+    super(input, initial)
+    this.isHexValidator = true
+
+    this.regex = HexValidator.Regex
+  }
+
+  /**
+   * @returns {Color | null}
+   */
+  validate() {
+    const m = this.input.value.match(this.regex)
+    if (m === null) return null
+
+    const c = new Color(m[0])
+    this.lastValid = RGBToHexString(c.r, c.g, c.b)
+
+    return c
+  }
+}
+
 class ColorPicker extends EventTarget {
   constructor(title = 'Color picker') {
     super()
@@ -50,14 +238,74 @@ class ColorPicker extends EventTarget {
       this.updateConversionFields()
     })
 
-    // [ ] whenever a field changes, update the rest of the fields and the palette
-    // [X] whenever the palette changes, update the fields
+    // const hexValidator = {
+    //   hex6: /\s*#?(?<red>[0-9a-f]{2})(?<green>[0-9a-f]{2})(?<blue>[0-9a-f]{2})\s*$/i,
+    //   hex3: /\s*#?(?<red>[0-9a-f])(?<green>[0-9a-f])(?<blue>[0-9a-f])\s*$/i,
 
-    this.addEventListener('fieldchange-hex', console.log)
-    this.addEventListener('fieldchange-rgb', console.log)
-    this.addEventListener('fieldchange-hsv', console.log)
-    this.addEventListener('fieldchange-hsl', console.log)
-    this.addEventListener('fieldchange-cmyk', console.log)
+    //   /**
+    //    * @param {RegExpMatchArray} match 
+    //    * @returns {string} #RRGGBB
+    //    */
+    //   createString(match) {
+    //     return new Color(match[0]).toHexString()
+    //   },
+
+    //   /** @type {string} */
+    //   lastValid: null,
+
+    //   /**
+    //    * @param {string} input 
+    //    */
+    //   setLastValid(input) {
+    //     hexValidator.lastValid = input
+    //   },
+
+    //   /**
+    //    * @param {string} input 
+    //    */
+    //   validate: input => {
+    //     const trimmed = input.trim()
+
+    //     const m = trimmed.match(trimmed.length >= 6 ? hexValidator.hex6 : hexValidator.hex3)
+    //     // const m = trimmed.length >= 6 ? input.match(hexValidator.hex6) : input.match(hexValidator.hex3)
+    //     // let m = null
+    //     // if (trimmed.length >= 6) {
+    //     //   m = input.match(hexValidator.hex6)
+    //     // } else {
+    //     //   m = input.match(hexValidator.hex3)
+    //     // }
+
+    //     if (m !== null) hexValidator.setLastValid(hexValidator.createString(m))
+    //     return m
+    //   }
+    // }
+
+    this.addEventListener('fieldchange-hex', () => {
+      const valid = this.fieldHexValidator.validate()
+      if (valid !== null) this.setColor(valid, 'HEX')
+    })
+    this.addEventListener('fieldchange-rgb', () => {
+      const valid = this.fieldRGBValidator.validate()
+      if (valid !== null) this.setColor(valid, 'RGB')
+    })
+    this.addEventListener('fieldchange-hsv', () => {
+      const valid = this.fieldHSVValidator.validate()
+      if (valid !== null) this.setColor(valid, 'HSV')
+    })
+    this.addEventListener('fieldchange-hsl', () => {
+      const valid = this.fieldHSLValidator.validate()
+      if (valid !== null) this.setColor(valid, 'HSL')
+    })
+    this.addEventListener('fieldchange-cmyk', () => {
+      const valid = this.fieldCMYKValidator.validate()
+      if (valid !== null) this.setColor(valid, 'CMYK')
+    })
+
+    this.addEventListener('fieldblur-hex', () => this.fieldHexValidator.onBlur())
+    this.addEventListener('fieldblur-rgb', () => this.fieldRGBValidator.onBlur())
+    this.addEventListener('fieldblur-hsv', () => this.fieldHSVValidator.onBlur())
+    this.addEventListener('fieldblur-hsl', () => this.fieldHSLValidator.onBlur())
+    this.addEventListener('fieldblur-cmyk', () => this.fieldCMYKValidator.onBlur())
 
     const colorPickerContainer = document.createElement('div')
     colorPickerContainer.classList.add('color-picker-container', 'vertical', 'center')
@@ -118,9 +366,11 @@ class ColorPicker extends EventTarget {
       input.addEventListener('input', () => {
         this.dispatchEvent(new CustomEvent('fieldchange-hex', { detail: { value: input.value } }))
       })
+      input.addEventListener('blur', () => this.dispatchEvent(new CustomEvent('fieldblur-hex')))
       fieldset.append(legend, input)
       conversionHexContainer.appendChild(fieldset)
-      this.fieldHEX = input
+      this.fieldHex = input
+      this.fieldHexValidator = new HexValidator(input)
     }
 
     const conversionRGBContainer = document.createElement('div')
@@ -134,11 +384,13 @@ class ColorPicker extends EventTarget {
       const input = document.createElement('input')
       input.type = 'text'
       input.addEventListener('input', () => {
-        this.dispatchEvent(new CustomEvent('fieldchange-rgb', { detail: { value: input.value } }))
+        this.dispatchEvent(new CustomEvent('fieldchange-rgb'))
       })
+      input.addEventListener('blur', () => this.dispatchEvent(new CustomEvent('fieldblur-rgb')))
       fieldset.append(legend, input)
       conversionRGBContainer.appendChild(fieldset)
       this.fieldRGB = input
+      this.fieldRGBValidator = new RGBValidator(input)
     }
 
     const conversionCMYKContainer = document.createElement('div')
@@ -154,9 +406,11 @@ class ColorPicker extends EventTarget {
       input.addEventListener('input', () => {
         this.dispatchEvent(new CustomEvent('fieldchange-cmyk', { detail: { value: input.value } }))
       })
+      input.addEventListener('blur', () => this.dispatchEvent(new CustomEvent('fieldblur-cmyk')))
       fieldset.append(legend, input)
       conversionCMYKContainer.appendChild(fieldset)
       this.fieldCMYK = input
+      this.fieldCMYKValidator = new CMYKValidator(input)
     }
 
     const conversionHSVContainer = document.createElement('div')
@@ -172,9 +426,11 @@ class ColorPicker extends EventTarget {
       input.addEventListener('input', () => {
         this.dispatchEvent(new CustomEvent('fieldchange-hsv', { detail: { value: input.value } }))
       })
+      input.addEventListener('blur', () => this.dispatchEvent(new CustomEvent('fieldblur-hsv')))
       fieldset.append(legend, input)
       conversionHSVContainer.appendChild(fieldset)
       this.fieldHSV = input
+      this.fieldHSVValidator = new HSVValidator(input)
     }
 
     const conversionHSLContainer = document.createElement('div')
@@ -190,9 +446,11 @@ class ColorPicker extends EventTarget {
       input.addEventListener('input', () => {
         this.dispatchEvent(new CustomEvent('fieldchange-hsl', { detail: { value: input.value } }))
       })
+      input.addEventListener('blur', () => this.dispatchEvent(new CustomEvent('fieldblur-hsl')))
       fieldset.append(legend, input)
       conversionHSLContainer.appendChild(fieldset)
       this.fieldHSL = input
+      this.fieldHSLValidator = new HSLValidator(input)
     }
 
     this.element = colorPickerContainer
@@ -297,27 +555,32 @@ class ColorPicker extends EventTarget {
     const c = new Color(this.getCurrentColor())
 
     if (exclude !== 'HEX') {
-      this.fieldHEX.value = c.toHexString()
+      this.fieldHex.value = c.toHexString()
+      this.fieldHexValidator.lastValid = this.fieldHex.value
     }
 
     if (exclude !== 'RGB') {
       let s = c.toRGBString()
       this.fieldRGB.value = s.substring(4, s.length - 1)
+      this.fieldRGBValidator.lastValid = this.fieldRGB.value
     }
 
     if (exclude !== 'CMYK') {
       let s = c.toCMYKString()
       this.fieldCMYK.value = s.substring(5, s.length - 1)
+      this.fieldCMYKValidator.lastValid = this.fieldCMYK.value
     }
 
     if (exclude !== 'HSV') {
       let s = c.toHSVString(true)
       this.fieldHSV.value = s.substring(4, s.length - 1)
+      this.fieldHSVValidator.lastValid = this.fieldHSV.value
     }
 
     if (exclude !== 'HSL') {
       let s = c.toHSLString(true)
       this.fieldHSL.value = s.substring(4, s.length - 1)
+      this.fieldHSLValidator.lastValid = this.fieldHSL.value
     }
   }
 
@@ -369,18 +632,60 @@ class ColorPicker extends EventTarget {
   }
 
   /**
-   * @param {string} [initialColor='rgb(204, 40, 40)'] 
-   * @returns {ColorPicker}
+   * @param {Color} c 
+   * @param {'HEX' | 'RGB' | 'CMYK' | 'HSV' | 'HSL' | ''} [exclude=''] 
    */
-  initialize(initialColor = 'rgb(204, 40, 40)') {
-    const c = new Color(initialColor)
-    const [h, s, v] = c.getHSV()
+  setColor(c, exclude = '') {
+    {
+      const str = c.toHexString()
+      this.fieldHexValidator.lastValid = str
+    }
+
+    {
+      const str = c.toRGBString()
+      const start = str.indexOf('(') + 1
+      const end = str.lastIndexOf(')')
+      this.fieldRGBValidator.lastValid = str.substring(start, end)
+    }
+
+    {
+      const str = c.toCMYKString()
+      const start = str.indexOf('(') + 1
+      const end = str.lastIndexOf(')')
+      this.fieldCMYKValidator.lastValid = str.substring(start, end)
+    }
+
+    {
+      const str = c.toHSVString(true)
+      const start = str.indexOf('(') + 1
+      const end = str.lastIndexOf(')')
+      this.fieldHSVValidator.lastValid = str.substring(start, end)
+    }
+
+    {
+      const str = c.toHSLString(true)
+      const start = str.indexOf('(') + 1
+      const end = str.lastIndexOf(')')
+      this.fieldHSLValidator.lastValid = str.substring(start, end)
+    }
+
+    const [h, s, v] = RGBToHSV(c.r, c.g, c.b)
 
     this.setHue(h, false)
     this.setSV(s, v)
     this.setDropperPosPalette(s, 1 - v)
     this.setDropperPosSlider(h / 360)
 
+    this.updateConversionFields(exclude)
+  }
+
+  /**
+   * @param {string} [initialColor='rgb(204, 40, 40)'] 
+   * @returns {ColorPicker}
+   */
+  initialize(initialColor = 'rgb(204, 40, 40)') {
+    const c = new Color(initialColor)
+    this.setColor(c)
     return this
   }
 
