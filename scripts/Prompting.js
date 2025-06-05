@@ -3,7 +3,7 @@
  * @param {string} [initial=''] 
  * @param {string} [placeholder=''] 
  */
-function promptForTaskName(callback, initial = '', placeholder = '') {
+function PromptForTaskName(callback, initial = '', placeholder = '') {
   let removed = false
   let escaped = false
 
@@ -53,7 +53,7 @@ function promptForTaskName(callback, initial = '', placeholder = '') {
  * @param {(ret: {original: string, picked: string}) => void} callback 
  * @param {string} initial
  */
-function promptForColor(callback, initial) {
+function PromptForColor(callback, initial) {
   let removed = false
 
   /**
@@ -119,7 +119,7 @@ function promptForColor(callback, initial) {
  * @param {string} [initial=''] 
  * @param {boolean} [focus=true] 
  */
-function promptForTextInput(callback, initial = '', select = true) {
+function PromptForTextInput(callback, initial = '', select = true) {
   let removed = false
 
   const background = document.createElement('div')
@@ -164,7 +164,7 @@ function promptForTextInput(callback, initial = '', select = true) {
  * @param {string} [initial=''] 
  * @param {boolean} [focus=true] 
  */
-function promptForTextOutput(initial = '', select = true) {
+function PromptForTextOutput(initial = '', select = true) {
   let removed = false
 
   const background = document.createElement('div')

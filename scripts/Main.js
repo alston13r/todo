@@ -86,7 +86,7 @@ function addCreationButtonsToTask(task) {
   task.dom.container.append(topButton, bottomButton, rightButton)
 
   topButton.addEventListener('click', () => {
-    promptForTaskName(ret => {
+    PromptForTaskName(ret => {
       if (ret.valid) {
         const newTask = new Task(ret.trimmed)
         task.addTaskAbove(newTask)
@@ -96,7 +96,7 @@ function addCreationButtonsToTask(task) {
   })
 
   bottomButton.addEventListener('click', () => {
-    promptForTaskName(ret => {
+    PromptForTaskName(ret => {
       if (ret.valid) {
         const newTask = new Task(ret.trimmed)
         task.addTaskBelow(newTask)
@@ -106,7 +106,7 @@ function addCreationButtonsToTask(task) {
   })
 
   rightButton.addEventListener('click', () => {
-    promptForTaskName(ret => {
+    PromptForTaskName(ret => {
       if (ret.valid) {
         const newTask = new Task(ret.trimmed)
         task.addTask(newTask)
@@ -626,7 +626,7 @@ function addCreateButtonToRoot() {
   root.appendChild(button)
 
   button.addEventListener('click', () => {
-    promptForTaskName(ret => {
+    PromptForTaskName(ret => {
       if (ret.valid) {
         const newTask = new Task(ret.trimmed)
         addTaskToRoot(newTask)
