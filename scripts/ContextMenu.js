@@ -89,18 +89,24 @@ class ContextMenu {
           if (ret.valid) {
             task.rename(ret.trimmed)
           }
-        }, task.name)
+        }, task.name, task.name)
         menu.destroy()
       }),
       new ContextMenuLine('Change color', () => {
         // rgb(r, g, b)
         const bg = task.style.backgroundColor
-        function ensureLength(str = '00', len = 2, fill = '0') {
-          const t = fill.repeat(len).substring(0, str.length - len)
-          return t + str
+
+        /**
+         * @param {number} v 
+         * @returns {string}
+         */
+        function ensureLength(v) {
+          const s = v.toString(16)
+          if (s.length === 1) return '0' + s
+          return s
         }
 
-        const [r, g, b] = bg.match(/\d+/g).map(Number).map(v => ensureLength(v.toString(16)))
+        const [r, g, b] = bg.match(/\d+/g).map(Number).map(v => ensureLength(v))
         const bgFormatted = '#' + r + g + b
 
         promptForColor(ret => {
@@ -133,18 +139,24 @@ class ContextMenu {
           if (ret.valid) {
             task.rename(ret.trimmed)
           }
-        }, task.name)
+        }, task.name, task.name)
         menu.destroy()
       }),
       new ContextMenuLine('Change color', () => {
         // rgb(r, g, b)
         const bg = task.style.backgroundColor
-        function ensureLength(str = '00', len = 2, fill = '0') {
-          const t = fill.repeat(len).substring(0, str.length - len)
-          return t + str
+
+        /**
+         * @param {number} v 
+         * @returns {string}
+         */
+        function ensureLength(v) {
+          const s = v.toString(16)
+          if (s.length === 1) return '0' + s
+          return s
         }
 
-        const [r, g, b] = bg.match(/\d+/g).map(Number).map(v => ensureLength(v.toString(16)))
+        const [r, g, b] = bg.match(/\d+/g).map(Number).map(v => ensureLength(v))
         const bgFormatted = '#' + r + g + b
 
         promptForColor(ret => {

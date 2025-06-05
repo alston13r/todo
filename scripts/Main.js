@@ -13,67 +13,7 @@ function createRandomName(prefix = '', suffix = '') {
 
 
 
-/**
- * @param {string} rgb rgb(r, g, b)
- * @param {number} amount 
- * @returns {string} hsl(h, s%, l%)
- */
-function darkenColor(rgb, amount = 0.2) {
-  const [r, g, b] = rgb.match(/\d+/g).map(Number)
-  const hsl = rgbToHsl(r, g, b)
 
-  hsl[2] = Math.max(0, hsl[2] - amount)
-
-  return `hsl(${Math.round(hsl[0] * 360)}, ${Math.round(hsl[1] * 100)}%, ${Math.round(hsl[2] * 100)}%)`
-}
-
-/**
- * @param {number} r 0-255
- * @param {number} g 0-255
- * @param {number} b 0-255
- * @returns {[number, number, number]}
- */
-function rgbToHsl(r, g, b) {
-  r /= 255
-  g /= 255
-  b /= 255
-
-  const max = Math.max(r, g, b)
-  const min = Math.min(r, g, b)
-  let h, s, l = (max + min) / 2
-
-  if (max === min) {
-    h = s = 0
-  } else {
-    const d = max - min
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
-    switch (max) {
-      case r:
-        h = ((g - b) / d + (g < b ? 6 : 0))
-        break
-      case g:
-        h = ((b - r) / d + 2)
-        break
-      case b:
-        h = ((r - g) / d + 4)
-        break
-    }
-    h /= 6
-  }
-
-  return [h, s, l]
-}
-
-/**
- * @param {number} r 
- * @param {number} g 
- * @param {number} b 
- * @returns {'black' | 'white'}
- */
-function getTextColor(r, g, b) {
-  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  return luminance > 128 ? 'black' : 'white'
-}
 
 
 
@@ -193,6 +133,19 @@ function addCreationButtonsToTask(task) {
   })
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 /**
  * @param {(ret: {original: string, trimmed: string, valid: boolean}) => void} callback 
  * @param {string} [initial=''] 
@@ -246,25 +199,39 @@ function promptForTaskName(callback, initial = '', placeholder = '') {
 
 /**
  * @param {(ret: {original: string, picked: string}) => void} callback 
- * @param {string} [initial='#ff0000'] 
+ * @param {string} initial
  */
-function promptForColor(callback, initial = '#ff0000') {
+function promptForColor(callback, initial) {
   let removed = false
+
+  /**
+   * @param {KeyboardEvent} e 
+   */
+  function windowCallback(e) {
+    if (!removed && e.key === 'Escape') {
+      removed = true
+      background.remove()
+    }
+    window.removeEventListener('keydown', windowCallback)
+  }
+  window.addEventListener('keydown', windowCallback)
 
   const background = document.createElement('div')
   background.classList.add('horizontal', 'center', 'overlay')
 
   const aligner = document.createElement('div')
   aligner.classList.add('vertical', 'center')
+  aligner.style.gap = '20px'
   background.appendChild(aligner)
 
-  const colorInput = document.createElement('input')
-  colorInput.classList.add('sleek')
-  colorInput.type = 'color'
-  colorInput.value = initial
+  const colorPicker = new ColorPicker()
+
+  const buttonContainer = document.createElement('div')
+  buttonContainer.classList.add('horizontal')
+  buttonContainer.style.gap = '20px'
 
   const colorSubmit = document.createElement('button')
-  colorSubmit.classList.add('sleek')
+  colorSubmit.classList.add('button-27')
   colorSubmit.addEventListener('click', () => {
     if (!removed) {
       removed = true
@@ -272,13 +239,27 @@ function promptForColor(callback, initial = '#ff0000') {
     }
 
     const original = initial
-    const picked = colorInput.value
+    const picked = colorPicker.getCurrentColor()
     callback({ original, picked })
   })
-  colorSubmit.innerText = 'Submit color'
+  colorSubmit.innerText = 'Submit new color'
 
-  aligner.append(colorInput, colorSubmit)
+  const colorCancel = document.createElement('button')
+  colorCancel.classList.add('button-27')
+  colorCancel.addEventListener('click', () => {
+    if (!removed) {
+      removed = true
+      background.remove()
+    }
+  })
+  colorCancel.innerText = 'Cancel'
+
+  buttonContainer.append(colorSubmit, colorCancel)
+
+  colorPicker.appendTo(aligner)
+  aligner.append(buttonContainer)
   document.body.appendChild(background)
+  colorPicker.initialize(initial)
 }
 
 /**
@@ -477,7 +458,10 @@ class Task {
     this.dom.ul.appendChild(task.createDom())
     this.expand(bubble, false)
 
-    if (save === true) TaskIO.Save()
+    if (save === true) {
+      task.setBackgroundColor(this.style.backgroundColor, false)
+      TaskIO.Save()
+    }
   }
 
   /**
@@ -496,7 +480,10 @@ class Task {
 
     this.createDom().before(task.createDom())
 
-    if (save === true) TaskIO.Save()
+    if (save === true) {
+      task.setBackgroundColor(this.parent.style.backgroundColor, false)
+      TaskIO.Save()
+    }
   }
 
   /**
@@ -515,7 +502,10 @@ class Task {
 
     this.createDom().after(task.createDom())
 
-    if (save === true) TaskIO.Save()
+    if (save === true) {
+      task.setBackgroundColor(this.parent.style.backgroundColor, false)
+      TaskIO.Save()
+    }
   }
 
   /**
@@ -708,30 +698,22 @@ class Task {
   setBackgroundColor(newColor = '', save = true) {
     if (!this.builtDom) return
 
-    if (newColor.length > 0) {
-      // set background color
-      this.dom.span.style.backgroundColor = newColor
-    } else {
-      this.dom.span.style.backgroundColor = this.style.backgroundColor
-    }
-
-    // get rgb(r, g, b)
-    const rgbString = getComputedStyle(this.dom.span).backgroundColor
-    const [r, g, b] = rgbString.match(/\d+/g).map(Number)
+    const c = newColor.length > 0 ? new Color(newColor) : new Color(this.style.backgroundColor)
+    const str = c.toRGBString()
 
     // ensure style is updated
-    this.style.backgroundColor = rgbString
+    this.style.backgroundColor = str
 
-    if (save === true) TaskIO.Save()
-
-    // get darkened hsl(h, s%, l%)
-    const hsl = darkenColor(rgbString)
+    // set background color
+    this.dom.span.style.backgroundColor = str
 
     // set border color
-    this.dom.span.style.borderColor = hsl
+    this.dom.span.style.borderColor = RGBToRGBString(...DarkenColor(c.r, c.g, c.b))
 
     // set text color
-    this.dom.span.style.color = getTextColor(r, g, b)
+    this.dom.span.style.color = GetTextColor(c.r, c.g, c.b)
+
+    if (save === true) TaskIO.Save()
   }
 
   /**
@@ -755,10 +737,7 @@ class Task {
       obj.expanded = this.isExpanded()
     }
 
-    if (this.style.backgroundColor !== 'rgb(153, 153, 153)') {
-      obj.backgroundColor = this.style.backgroundColor
-    }
-
+    obj.backgroundColor = this.style.backgroundColor
     return obj
   }
 
