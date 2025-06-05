@@ -32,23 +32,6 @@ class Validator {
   }
 }
 
-// class SingleRegexValidator extends Validator {
-//   /**
-//    * @param {HTMLInputElement} input 
-//    * @param {string} initial 
-//    */
-//   constructor(input, initial) {
-//     super(input, initial)
-//     this.isSingleRegexValidator = true
-//     this.regex = /.*/i
-//   }
-
-//   validate() {
-//     const m = this.inpu
-//     return this.input.value.match
-//   }
-// }
-
 class RGBValidator extends Validator {
   static Regex = /\s*(?:rgb\()?\s*(?<red>\d{1,3})\s*,\s*(?<green>\d{1,3})\s*,\s*(?<blue>\d{1,3})\s*\)?\s*$/i
 
