@@ -104,7 +104,7 @@ function RGBToHSV(r = 0, g = 0, b = 0, arr = []) {
     s = delta / max
   }
 
-  arr[0] = h
+  arr[0] = h < 0 ? h + 360 : h
   arr[1] = s
   arr[2] = v
 
@@ -180,7 +180,7 @@ function RGBToHSL(r = 0, g = 0, b = 0, arr = []) {
     s = delta / (1 - Math.abs(2 * l - 1))
   }
 
-  arr[0] = h
+  arr[0] = h < 0 ? h + 360 : h
   arr[1] = s
   arr[2] = l
 
@@ -425,9 +425,9 @@ function RGBStringToRGB(str, arr = []) {
   let m
 
   if (m = str.match(/\s*rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)\s*$/)) {
-    arr[0] = parseInt(m[1]) / 255
-    arr[1] = parseInt(m[2]) / 255
-    arr[2] = parseInt(m[3]) / 255
+    arr[0] = clamp(parseInt(m[1]) / 255)
+    arr[1] = clamp(parseInt(m[2]) / 255)
+    arr[2] = clamp(parseInt(m[3]) / 255)
   } else {
     arr[0] = 0
     arr[1] = 0
@@ -523,6 +523,7 @@ class Color {
         if (str.startsWith('hsl')) return this.fromHSL(str)
         if (str.startsWith('hsv')) return this.fromHSV(str)
         if (str.startsWith('cmyk')) return this.fromCMYK(str)
+        return this.fromHex(str)
       }
       if (r instanceof Color) return this.copy(r)
       return this
