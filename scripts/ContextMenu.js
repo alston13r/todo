@@ -227,11 +227,7 @@ class ContextMenu {
 
     const menu = new ContextMenu(e, [
       new ContextMenuLine('Rename', () => {
-        PromptForTaskName(ret => {
-          if (ret.valid) {
-            task.rename(ret.trimmed)
-          }
-        }, task.name, task.name)
+        new TaskPrompt(task)
         menu.destroy()
       }),
       new ContextMenuLine('Change color', () => {
