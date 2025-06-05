@@ -85,7 +85,7 @@ class ContextMenu {
 
     const menu = new ContextMenu(e, [
       new ContextMenuLine('Rename', () => {
-        promptForTaskName(ret => {
+        PromptForTaskName(ret => {
           if (ret.valid) {
             task.rename(ret.trimmed)
           }
@@ -109,7 +109,7 @@ class ContextMenu {
         const [r, g, b] = bg.match(/\d+/g).map(Number).map(v => ensureLength(v))
         const bgFormatted = '#' + r + g + b
 
-        promptForColor(ret => {
+        PromptForColor(ret => {
           task.setBackgroundColor(ret.picked)
         }, bgFormatted)
         menu.destroy()
@@ -135,7 +135,7 @@ class ContextMenu {
 
     const menu = new ContextMenu(e, [
       new ContextMenuLine('Rename', () => {
-        promptForTaskName(ret => {
+        PromptForTaskName(ret => {
           if (ret.valid) {
             task.rename(ret.trimmed)
           }
@@ -159,7 +159,7 @@ class ContextMenu {
         const [r, g, b] = bg.match(/\d+/g).map(Number).map(v => ensureLength(v))
         const bgFormatted = '#' + r + g + b
 
-        promptForColor(ret => {
+        PromptForColor(ret => {
           task.setBackgroundColor(ret.picked)
         }, bgFormatted)
         menu.destroy()
