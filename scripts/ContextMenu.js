@@ -88,11 +88,9 @@ class TaskPrompt {
       const valid = trimmed.length > 0
 
       const text = document.createTextNode(valid ? trimmed : taskName)
-      if (valid) task.name = trimmed
-      task.dom.text = text
-
       input.replaceWith(text)
       task.dom.text = text
+      if (valid) task.rename(trimmed)
     })
 
     input.addEventListener('keydown', e => {
@@ -185,25 +183,9 @@ class ContextMenu {
         menu.destroy()
       }),
       new ContextMenuLine('Change color', () => {
-        // rgb(r, g, b)
-        const bg = task.style.backgroundColor
-
-        /**
-         * @param {number} v 
-         * @returns {string}
-         */
-        function ensureLength(v) {
-          const s = v.toString(16)
-          if (s.length === 1) return '0' + s
-          return s
-        }
-
-        const [r, g, b] = bg.match(/\d+/g).map(Number).map(v => ensureLength(v))
-        const bgFormatted = '#' + r + g + b
-
         PromptForColor(ret => {
           task.setBackgroundColor(ret.picked)
-        }, bgFormatted)
+        }, task.style.backgroundColor)
         menu.destroy()
       }),
       new ContextMenuLine('Reset color', () => {
@@ -231,25 +213,9 @@ class ContextMenu {
         menu.destroy()
       }),
       new ContextMenuLine('Change color', () => {
-        // rgb(r, g, b)
-        const bg = task.style.backgroundColor
-
-        /**
-         * @param {number} v 
-         * @returns {string}
-         */
-        function ensureLength(v) {
-          const s = v.toString(16)
-          if (s.length === 1) return '0' + s
-          return s
-        }
-
-        const [r, g, b] = bg.match(/\d+/g).map(Number).map(v => ensureLength(v))
-        const bgFormatted = '#' + r + g + b
-
         PromptForColor(ret => {
           task.setBackgroundColor(ret.picked)
-        }, bgFormatted)
+        }, task.style.backgroundColor)
         menu.destroy()
       }),
       new ContextMenuLine('Reset color', () => {
