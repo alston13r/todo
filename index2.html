@@ -120,7 +120,7 @@
     }
 
     .dropdown-content a:hover {
-      background-color: #f1f1f1;
+      background-color: rgba(0, 0, 0, 0.1);
     }
 
     .dropdown:hover .dropdown-content {
@@ -138,128 +138,119 @@
     }
   </style>
 
+  <script>
+
+    function generateTitle(name, hasBack = true) {
+      const container = document.createElement('div')
+      container.classList.add('title-container')
+
+      if (hasBack) {
+        const backIcon = document.createElement('i')
+        container.appendChild(backIcon)
+        backIcon.classList.add('fas', 'fa-arrow-left')
+      }
+
+      const titleHeader = document.createElement('h2')
+      container.appendChild(titleHeader)
+      titleHeader.classList.add('hopeful-wrap', 'task-title-header')
+      titleHeader.innerText = name
+
+      return container
+    }
+
+    function generateTaskContainer(name) {
+      const container = document.createElement('div')
+      container.classList.add('task-container')
+
+      const taskHeader = document.createElement('h3')
+      container.appendChild(taskHeader)
+      taskHeader.classList.add('hopeful-wrap')
+      taskHeader.innerText = name
+
+      const taskStuffContainer = document.createElement('div')
+      container.appendChild(taskStuffContainer)
+      taskStuffContainer.classList.add('task-stuff-container')
+
+      const editIcon = document.createElement('i')
+      taskStuffContainer.appendChild(editIcon)
+      editIcon.classList.add('fas', 'fa-pen-to-square')
+
+      const dropdownContainer = document.createElement('div')
+      taskStuffContainer.appendChild(dropdownContainer)
+      dropdownContainer.classList.add('dropdown')
+
+      const dropdownButton = document.createElement('div')
+      dropdownContainer.appendChild(dropdownButton)
+      dropdownButton.classList.add('dropbtn')
+      dropdownButton.innerText = 'Todo'
+
+      const dropdownContent = document.createElement('div')
+      dropdownContainer.appendChild(dropdownContent)
+      dropdownContent.classList.add('dropdown-content')
+
+      const anchorTodo = document.createElement('a')
+      const anchorInProgress = document.createElement('a')
+      const anchorComplete = document.createElement('a')
+      dropdownContent.append(anchorTodo, anchorInProgress, anchorComplete)
+      anchorTodo.innerText = 'Todo'
+      anchorInProgress.innerText = 'In Progress'
+      anchorComplete.innerText = 'Complete'
+
+      const trashIcon = document.createElement('i')
+      taskStuffContainer.appendChild(trashIcon)
+      trashIcon.classList.add('fas', 'fa-trash')
+
+      editIcon.addEventListener('click', e => {
+        console.log(`click - edit <${name}>`)
+      })
+
+      trashIcon.addEventListener('click', e => {
+        console.log(`click - trash <${name}>`)
+      })
+
+      anchorTodo.addEventListener('click', e => {
+        console.log(`dropdown - todo <${name}>`)
+        dropdownButton.innerText = anchorTodo.innerText
+      })
+
+      anchorInProgress.addEventListener('click', e => {
+        console.log(`dropdown - in progress <${name}>`)
+        dropdownButton.innerText = anchorInProgress.innerText
+      })
+
+      anchorComplete.addEventListener('click', e => {
+        console.log(`dropdown - complete <${name}>`)
+        dropdownButton.innerText = anchorComplete.innerText
+      })
+
+      return container
+    }
+
+    window.onload = () => {
+      const top = document.querySelector('.top')
+      const bottom = document.querySelector('.bottom')
+
+      const title = generateTitle('Cool! Task name but it\'s realllllllllllllllllllllllllllly long, with a loooooooopooooooooooooooooot of text and a bunch more lines I hope')
+      top.appendChild(title)
+
+      const task1 = generateTaskContainer('Task 1')
+      bottom.appendChild(task1)
+
+      const task2 = generateTaskContainer('Cool! Task name but it\'s realllllllllllllllllllllllllllly long, with a loooooooopooooooooooooooooot of text and a bunch more lines I hope')
+      bottom.appendChild(task2)
+
+      const task3 = generateTaskContainer('Task 3')
+      bottom.appendChild(task3)
+    }
+
+  </script>
+
 </head>
 
 <body>
 
-  <div class='top'>
-
-    <div class='title-container'>
-
-      <i class='fas fa-arrow-left'></i>
-
-      <h2 class='hopeful-wrap task-title-header'>Task name but it's realllllllllllllllllllllllllllly long, with a
-        loooooooopooooooooooooooooot of text and a
-        bunch
-        more lines I hope</h1>
-
-    </div>
-
-  </div>
-
-  <div class='bottom'>
-
-    <div class='task-container'>
-
-      <h3 class='hopeful-wrap'>Task name but it's realllllllllllllllllllllllllllly long,
-        with a
-        loooooooopoooooooooooooooooooooooooooooot of text and a
-        bunch
-        more lines I hope</h3>
-
-      <div class='task-stuff-container'>
-        <i class='fas fa-pen-to-square'></i>
-
-        <div class='dropdown'>
-          <div class='dropbtn'>Todo</div>
-          <div class='dropdown-content'>
-            <a>Todo</a>
-            <a>In Progress</a>
-            <a>Complete</a>
-          </div>
-        </div>
-
-        <i class='fas fa-trash'></i>
-      </div>
-
-    </div>
-
-    <div class='task-container'>
-
-      <h3 class='hopeful-wrap'>Task name but it's realllllllllllllllllllllllllllly long,
-        with a
-        loooooooopoooooooooooooooooooooooooooooot of text and a
-        bunch
-        more lines I hope</h3>
-
-      <div class='task-stuff-container'>
-        <i class='fas fa-pen-to-square'></i>
-
-        <div class='dropdown'>
-          <div class='dropbtn'>Todo</div>
-          <div class='dropdown-content'>
-            <a>Todo</a>
-            <a>In Progress</a>
-            <a>Complete</a>
-          </div>
-        </div>
-
-        <i class='fas fa-trash'></i>
-      </div>
-
-    </div>
-
-    <div class='task-container'>
-
-      <h3 class='hopeful-wrap'>Task name but it's realllllllllllllllllllllllllllly long,
-        with a
-        loooooooopoooooooooooooooooooooooooooooot of text and a
-        bunch
-        more lines I hope</h3>
-
-      <div class='task-stuff-container'>
-        <i class='fas fa-pen-to-square'></i>
-
-        <div class='dropdown'>
-          <div class='dropbtn'>Todo</div>
-          <div class='dropdown-content'>
-            <a>Todo</a>
-            <a>In Progress</a>
-            <a>Complete</a>
-          </div>
-        </div>
-
-        <i class='fas fa-trash'></i>
-      </div>
-
-    </div>
-
-    <div class='task-container'>
-
-      <h3 class='hopeful-wrap'>Task name but it's realllllllllllllllllllllllllllly long,
-        with a
-        loooooooopoooooooooooooooooooooooooooooot of text and a
-        bunch
-        more lines I hope</h3>
-
-      <div class='task-stuff-container'>
-        <i class='fas fa-pen-to-square'></i>
-
-        <div class='dropdown'>
-          <div class='dropbtn'>Todo</div>
-          <div class='dropdown-content'>
-            <a>Todo</a>
-            <a>In Progress</a>
-            <a>Complete</a>
-          </div>
-        </div>
-
-        <i class='fas fa-trash'></i>
-      </div>
-
-    </div>
-
-  </div>
+  <div class='top'></div>
+  <div class='bottom'></div>
 
 </body>
 
