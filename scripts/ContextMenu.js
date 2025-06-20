@@ -2,16 +2,37 @@ class ContextMenuLine {
   /**
    * @param {string} text 
    * @param {(e: MouseEvent) => void} callback 
+   * @param {'icon-palette' |
+   *   'icon-pen' |
+   *   'icon-red-cross' |
+   *   'icon-paint-brush' |
+   *   'icon-pen' |
+   *   'icon-pencil' |
+   *   'icon-red-cross' |
+   *   'icon-arrow-down' |
+   *   'icon-arrow-up' |
+   *   'icon-triangle-down' |
+   *   'icon-triangle-up' |
+   *   'icon-triangle-right' |
+   *   'icon-inbox' |
+   *   'icon-outbox'
+   * } icon 
    */
-  constructor(text, callback) {
+  constructor(text, callback, icon) {
     const line = document.createElement('li')
     this.domElement = line
 
     const lineSpan = document.createElement('span')
 
+    if (icon) {
+      const i = document.createElement('i')
+      i.classList.add('icon', icon)
+      line.appendChild(i)
+    }
+
     line.appendChild(lineSpan)
     lineSpan.innerText = text
-    lineSpan.addEventListener('click', callback)
+    line.addEventListener('click', callback)
   }
 }
 
@@ -182,17 +203,17 @@ class ContextMenu {
       new ContextMenuLine('Rename', () => {
         new TaskPrompt(task)
         menu.destroy()
-      }),
+      }, 'icon-pen'),
       new ContextMenuLine('Change color', () => {
         PromptForColor(ret => {
           task.setBackgroundColor(ret.picked)
         }, task.style.backgroundColor)
         menu.destroy()
-      }),
+      }, 'icon-palette'),
       new ContextMenuLine('Reset color', () => {
         task.setBackgroundColor(Task.DefaultBackgroundColor)
         menu.destroy()
-      }),
+      }, 'icon-red-cross'),
     ])
 
     ContextMenu.Current = menu
@@ -212,25 +233,25 @@ class ContextMenu {
       new ContextMenuLine('Rename', () => {
         new TaskPrompt(task)
         menu.destroy()
-      }),
+      }, 'icon-pen'),
       new ContextMenuLine('Change color', () => {
         PromptForColor(ret => {
           task.setBackgroundColor(ret.picked)
         }, task.style.backgroundColor)
         menu.destroy()
-      }),
+      }, 'icon-palette'),
       new ContextMenuLine('Reset color', () => {
         task.setBackgroundColor(Task.DefaultBackgroundColor)
         menu.destroy()
-      }),
+      }, 'icon-red-cross'),
       new ContextMenuLine('Expand all', () => {
         task.expandAll()
         menu.destroy()
-      }),
+      }, 'icon-triangle-down'),
       new ContextMenuLine('Collapse all', () => {
         task.collapseAll()
         menu.destroy()
-      }),
+      }, 'icon-triangle-up'),
     ])
 
     ContextMenu.Current = menu
@@ -244,11 +265,11 @@ class ContextMenu {
       new ContextMenuLine('Import tasks', () => {
         TaskIO.Import()
         menu.destroy()
-      }),
+      }, 'icon-arrow-down'),
       new ContextMenuLine('Export tasks', () => {
         TaskIO.Export()
         menu.destroy()
-      }),
+      }, 'icon-arrow-up'),
     ])
 
     ContextMenu.Current = menu
