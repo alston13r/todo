@@ -71,33 +71,27 @@ function addCreationButtonsToTask(task) {
   task.dom.container.append(topButton, bottomButton, rightButton)
 
   topButton.addEventListener('click', () => {
-    PromptForTaskName(ret => {
-      if (ret.valid) {
-        const newTask = new Task(ret.trimmed)
-        task.addTaskAbove(newTask)
-        newTask.setBackgroundColor()
-      }
-    })
+    const newTask = new Task()
+    task.addTaskAbove(newTask)
+    newTask.setBackgroundColor()
+
+    setTimeout(() => new TaskPrompt(newTask, true), 5)
   })
 
   bottomButton.addEventListener('click', () => {
-    PromptForTaskName(ret => {
-      if (ret.valid) {
-        const newTask = new Task(ret.trimmed)
-        task.addTaskBelow(newTask)
-        newTask.setBackgroundColor()
-      }
-    })
+    const newTask = new Task()
+    task.addTaskBelow(newTask)
+    newTask.setBackgroundColor()
+
+    setTimeout(() => new TaskPrompt(newTask, true), 5)
   })
 
   rightButton.addEventListener('click', () => {
-    PromptForTaskName(ret => {
-      if (ret.valid) {
-        const newTask = new Task(ret.trimmed)
-        task.addTask(newTask)
-        newTask.setBackgroundColor()
-      }
-    })
+    const newTask = new Task()
+    task.addTask(newTask)
+    newTask.setBackgroundColor()
+
+    setTimeout(() => new TaskPrompt(newTask, true), 5)
   })
 
   const spanBounds = task.dom.span.getBoundingClientRect()
@@ -159,7 +153,7 @@ class Task {
    * @param {string} name 
    * @param {{ backgroundColor: string; }} [style={ backgroundColor: Task.DefaultBackgroundColor }] 
    */
-  constructor(name, style = { backgroundColor: Task.DefaultBackgroundColor }) {
+  constructor(name = 'New task', style = { backgroundColor: Task.DefaultBackgroundColor }) {
     this.name = name
 
     this.builtDom = false

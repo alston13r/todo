@@ -17,9 +17,10 @@ class ContextMenuLine {
 
 class TaskPrompt {
   /**
-   * @param {Task} task 
+   * @param {Task} task
+   * @param {boolean} [clear=false]  
    */
-  constructor(task) {
+  constructor(task, clear = false) {
     let escaped = false
     let removed = false
 
@@ -53,7 +54,7 @@ class TaskPrompt {
     }
 
     input.name = createRandomName('input-')
-    input.value = taskName
+    input.value = clear ? '' : taskName
     input.placeholder = taskName
     task.dom.text.replaceWith(input)
     task.dom.text = null
