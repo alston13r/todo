@@ -81,3 +81,22 @@ ul.ctx-menu li {
 ul.ctx-menu li:hover {
   color: white;
 }
+
+
+
+
+
+.new-input {
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  background-color: inherit;
+  transition: width 0.2s;
+  min-width: 8ch;
+  max-width: 50ch;
+}
+
+.new-input:focus {
+  outline: none;
+}

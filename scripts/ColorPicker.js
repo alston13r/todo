@@ -32,23 +32,6 @@ class Validator {
   }
 }
 
-// class SingleRegexValidator extends Validator {
-//   /**
-//    * @param {HTMLInputElement} input 
-//    * @param {string} initial 
-//    */
-//   constructor(input, initial) {
-//     super(input, initial)
-//     this.isSingleRegexValidator = true
-//     this.regex = /.*/i
-//   }
-
-//   validate() {
-//     const m = this.inpu
-//     return this.input.value.match
-//   }
-// }
-
 class RGBValidator extends Validator {
   static Regex = /\s*(?:rgb\()?\s*(?<red>\d{1,3})\s*,\s*(?<green>\d{1,3})\s*,\s*(?<blue>\d{1,3})\s*\)?\s*$/i
 
@@ -237,48 +220,6 @@ class ColorPicker extends EventTarget {
 
       this.updateConversionFields()
     })
-
-    // const hexValidator = {
-    //   hex6: /\s*#?(?<red>[0-9a-f]{2})(?<green>[0-9a-f]{2})(?<blue>[0-9a-f]{2})\s*$/i,
-    //   hex3: /\s*#?(?<red>[0-9a-f])(?<green>[0-9a-f])(?<blue>[0-9a-f])\s*$/i,
-
-    //   /**
-    //    * @param {RegExpMatchArray} match 
-    //    * @returns {string} #RRGGBB
-    //    */
-    //   createString(match) {
-    //     return new Color(match[0]).toHexString()
-    //   },
-
-    //   /** @type {string} */
-    //   lastValid: null,
-
-    //   /**
-    //    * @param {string} input 
-    //    */
-    //   setLastValid(input) {
-    //     hexValidator.lastValid = input
-    //   },
-
-    //   /**
-    //    * @param {string} input 
-    //    */
-    //   validate: input => {
-    //     const trimmed = input.trim()
-
-    //     const m = trimmed.match(trimmed.length >= 6 ? hexValidator.hex6 : hexValidator.hex3)
-    //     // const m = trimmed.length >= 6 ? input.match(hexValidator.hex6) : input.match(hexValidator.hex3)
-    //     // let m = null
-    //     // if (trimmed.length >= 6) {
-    //     //   m = input.match(hexValidator.hex6)
-    //     // } else {
-    //     //   m = input.match(hexValidator.hex3)
-    //     // }
-
-    //     if (m !== null) hexValidator.setLastValid(hexValidator.createString(m))
-    //     return m
-    //   }
-    // }
 
     this.addEventListener('fieldchange-hex', () => {
       const valid = this.fieldHexValidator.validate()
