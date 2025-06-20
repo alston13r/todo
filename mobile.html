@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+
+<html lang='en'>
+
+<head>
+
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+
+  <link rel='icon' type='image/x-icon' href='https://cdn-icons-png.flaticon.com/512/8832/8832108.png'>
+  <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.css'>
+
+  <style>
+    body {
+      margin: 10px;
+      background-color: white;
+      color: black;
+      font-family: Arial, Helvetica, sans-serif;
+
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #333;
+        color: white;
+      }
+    }
+
+    div.top {
+      height: 15vh;
+      background-color: rgba(0, 0, 0, 0.1);
+    }
+
+    div.bottom {
+      background-color: rgba(0, 0, 0, 0.1);
+
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .hopeful-wrap {
+      overflow-wrap: break-word;
+      overflow: auto;
+      hyphens: auto;
+    }
+
+    h3 {
+      margin: 0;
+      background-color: rgba(0, 0, 0, 0.1);
+      max-width: 100%;
+    }
+
+    h3 {
+      max-height: 15vh;
+    }
+
+    .task-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      background-color: rgba(0, 0, 0, 0.1);
+    }
+
+    .task-stuff-container {
+      display: flex;
+      flex-direction: row;
+      gap: 10px;
+      align-items: center;
+    }
+
+    i.fas {
+      font-size: 150%;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      height: 100%;
+      margin: 10px;
+      gap: 10px;
+    }
+
+    .dropbtn {
+      padding: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+
+      background-color: #f9f9f9;
+      min-width: 160px;
+      box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+      z-index: 1;
+
+      user-select: none;
+    }
+
+    .dropdown-content a {
+      color: black;
+      display: block;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .dropdown-content a span {
+      display: block;
+      padding: 12px 16px;
+    }
+
+    .dropdown-content a:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+    }
+
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    .dropdown:hover .dropbtn {
+      background-color: rgba(0, 0, 0, 0.2);
+      /* background-color: #3e8e41; */
+    }
+
+    .task-title-header {
+      text-align: center;
+      margin: 0;
+      max-height: calc(15vh - 20px);
+    }
+  </style>
+
+  <script>
+
+    function generateDropdown() {
+      const container = document.createElement('div')
+      container.classList.add('dropdown')
+
+      const dropdownButton = document.createElement('div')
+      container.appendChild(dropdownButton)
+      dropdownButton.classList.add('dropbtn')
+      dropdownButton.innerText = 'Todo'
+
+      const dropdownContent = document.createElement('div')
+      container.appendChild(dropdownContent)
+      dropdownContent.classList.add('dropdown-content')
+
+      const anchorTodo = document.createElement('a')
+      const anchorInProgress = document.createElement('a')
+      const anchorComplete = document.createElement('a')
+      dropdownContent.append(anchorTodo, anchorInProgress, anchorComplete)
+
+      const cardTodo = document.createElement('span')
+      const cardInProgress = document.createElement('span')
+      const cardComplete = document.createElement('span')
+
+      cardTodo.innerText = 'Todo'
+      cardTodo.style.backgroundColor = '#777'
+
+      cardInProgress.innerText = 'In Progress'
+      cardInProgress.style.backgroundColor = '#ff0'
+
+      cardComplete.innerText = 'Complete'
+      cardComplete.style.backgroundColor = '#0f0'
+
+      anchorTodo.appendChild(cardTodo)
+      anchorInProgress.appendChild(cardInProgress)
+      anchorComplete.appendChild(cardComplete)
+
+      anchorTodo.addEventListener('click', e => {
+        console.log(`dropdown - todo <${name}>`)
+        dropdownButton.innerText = anchorTodo.innerText
+      })
+
+      anchorInProgress.addEventListener('click', e => {
+        console.log(`dropdown - in progress <${name}>`)
+        dropdownButton.innerText = anchorInProgress.innerText
+      })
+
+      anchorComplete.addEventListener('click', e => {
+        console.log(`dropdown - complete <${name}>`)
+        dropdownButton.innerText = anchorComplete.innerText
+      })
+
+      return container
+    }
+
+    function generateTitle(name, hasBack = true) {
+      const container = document.createElement('div')
+      container.classList.add('title-container')
+
+      if (hasBack) {
+        const backIcon = document.createElement('i')
+        container.appendChild(backIcon)
+        backIcon.classList.add('fas', 'fa-arrow-left')
+      }
+
+      const titleHeader = document.createElement('h2')
+      container.appendChild(titleHeader)
+      titleHeader.classList.add('hopeful-wrap', 'task-title-header')
+      titleHeader.innerText = name
+
+      return container
+    }
+
+    function generateTaskContainer(name) {
+      const container = document.createElement('div')
+      container.classList.add('task-container')
+
+      const taskHeader = document.createElement('h3')
+      container.appendChild(taskHeader)
+      taskHeader.classList.add('hopeful-wrap')
+      taskHeader.innerText = name
+
+      const taskStuffContainer = document.createElement('div')
+      container.appendChild(taskStuffContainer)
+      taskStuffContainer.classList.add('task-stuff-container')
+
+      const editIcon = document.createElement('i')
+      taskStuffContainer.appendChild(editIcon)
+      editIcon.classList.add('fas', 'fa-pen-to-square')
+
+      const dropdownContainer = generateDropdown()
+      taskStuffContainer.appendChild(dropdownContainer)
+
+      const trashIcon = document.createElement('i')
+      taskStuffContainer.appendChild(trashIcon)
+      trashIcon.classList.add('fas', 'fa-trash')
+
+      editIcon.addEventListener('click', e => {
+        console.log(`click - edit <${name}>`)
+      })
+
+      trashIcon.addEventListener('click', e => {
+        console.log(`click - trash <${name}>`)
+      })
+
+      return container
+    }
+
+    window.onload = () => {
+      const top = document.querySelector('.top')
+      const bottom = document.querySelector('.bottom')
+
+      const title = generateTitle('Cool! Task name but it\'s realllllllllllllllllllllllllllly long, with a loooooooopooooooooooooooooot of text and a bunch more lines I hope')
+      top.appendChild(title)
+
+      const task1 = generateTaskContainer('Task 1')
+      bottom.appendChild(task1)
+
+      const task2 = generateTaskContainer('Cool! Task name but it\'s realllllllllllllllllllllllllllly long, with a loooooooopooooooooooooooooot of text and a bunch more lines I hope')
+      bottom.appendChild(task2)
+
+      const task3 = generateTaskContainer('Task 3')
+      bottom.appendChild(task3)
+    }
+
+  </script>
+
+  <style>
+    /* .dropdown-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-button {
+      padding: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+    } */
+
+    /* .dropdown-content {
+      display: none;
+      position: absolute;
+
+      background-color: #f9f9f9;
+      min-width: 160px;
+      box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+      z-index: 1;
+
+      user-select: none;
+    } */
+
+    /* .dropdown-content a {
+      color: black;
+      display: block;
+      text-decoration: none;
+      cursor: pointer;
+    } */
+
+    /* .dropdown-content a span {
+      display: block;
+      padding: 12px 16px;
+    } */
+
+    /* .dropdown-content a:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+    } */
+
+    /* .dropdown-container:hover .dropdown-content {
+      display: block;
+    }
+
+    .dropdown-container:hover .dropdown-button {
+      background-color: rgba(0, 0, 0, 0.2);
+    } */
+
+    /* .dropdown:hover .dropbtn {
+      background-color: rgba(0, 0, 0, 0.2);
+    } */
+
+    .bordered-box {
+      --border-radius: 10px;
+      --border-width: 2px;
+      position: relative;
+      border-radius: var(--border-radius);
+      border: var(--border-width) solid black;
+      z-index: -2;
+    }
+
+    .bordered-box:after {
+      display: block;
+      content: none;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: calc(var(--border-radius) - var(--border-width));
+      z-index: -1;
+      top: 0;
+      left: 0;
+    }
+
+    .otherTemp>div:first-child {
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+    }
+
+    .otherTemp>div {
+      border-bottom-left-radius: 0px;
+      border-bottom-right-radius: 0px;
+      border-top-left-radius: 0px;
+      border-top-right-radius: 0px;
+    }
+
+    .otherTemp>div:last-child {
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div class='top'></div>
+  <div class='bottom'></div>
+
+  <div style='width: 160px;'>
+
+    <div style='display: block; z-index: 1;' class='otherTemp'>
+
+      <div class='bordered-box' style='border-color: black; background-color: #777;'>
+        <div style='
+        color: black;
+        margin: 2px;
+        padding: 16px;
+        '>
+          Todo
+        </div>
+      </div>
+
+      <div class='bordered-box' style='border-color: black; background-color: #ff0;'>
+        <div style='
+        color: black;
+        margin: 2px;
+        padding: 16px;
+        '>
+          In progress
+        </div>
+      </div>
+
+      <div class='bordered-box' style='border-color: black; background-color: #0f0;'>
+        <div style='
+        color: black;
+        margin: 2px;
+        padding: 16px;
+        '>
+          Complete
+        </div>
+      </div>
+
+    </div>
+
+
+
+
+
+
+
+
+  </div>
+
+
+
+
+
+
+
+
+
+  <!-- <div>
+
+    <div style='
+      display: inline-block;
+      position: absolute;
+      border: 5px solid white;
+      border-radius: 5px;
+      padding: 5px;
+      user-select: none;
+      color: black;
+      '>
+
+      <div style='
+        background-color: #777;
+        padding: 16px;
+      '>
+
+
+        <a style='
+        '>
+          <span>
+            Asdf
+          </span>
+        </a>
+      </div>
+
+    </div>
+
+  </div> -->
+
+</body>
+
+</html>
