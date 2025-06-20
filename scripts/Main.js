@@ -98,13 +98,16 @@ function addCreationButtonsToTask(task) {
 
   topButton.style.left = '10px'
   topButton.style.top = `${-buttonDistanceConstant}px`
+  topButton.style.userSelect = 'none'
 
   bottomButton.style.left = '10px'
   bottomButton.style.bottom = `${-buttonDistanceConstant}px`
+  bottomButton.style.userSelect = 'none'
 
   const rightBounds = rightButton.getBoundingClientRect()
   rightButton.style.left = `${spanBounds.width + 5}px`
   rightButton.style.top = `${spanBounds.height / 2 - rightBounds.height / 2}px`
+  rightButton.style.userSelect = 'none'
 
   taskToButtonsMap.set(task, {
     topButton, bottomButton, rightButton,
