@@ -41,3 +41,51 @@ i.icon-trash::before {
   background-color: #3f3f3f;
   border-radius: 10px;
 }
+
+i.icon-palette::before {
+  content: '🎨';
+}
+
+i.icon-paint-brush::before {
+  content: '🖌️';
+}
+
+i.icon-pen::before {
+  content: '✒️';
+}
+
+i.icon-pencil::before {
+  content: '✏️';
+}
+
+i.icon-red-cross::before {
+  content: '❌';
+}
+
+i.icon-triangle-down::before {
+  content: '🔽';
+}
+
+i.icon-triangle-right::before {
+  content: '▶️';
+}
+
+i.icon-triangle-up::before {
+  content: '🔼';
+}
+
+i.icon-arrow-down::before {
+  content: '⬇️';
+}
+
+i.icon-arrow-up::before {
+  content: '⬆️';
+}
+
+i.icon-inbox::before {
+  content: '📥';
+}
+
+i.icon-outbox::before {
+  content: '📤';
+}

@@ -71,46 +71,43 @@ function addCreationButtonsToTask(task) {
   task.dom.container.append(topButton, bottomButton, rightButton)
 
   topButton.addEventListener('click', () => {
-    PromptForTaskName(ret => {
-      if (ret.valid) {
-        const newTask = new Task(ret.trimmed)
-        task.addTaskAbove(newTask)
-        newTask.setBackgroundColor()
-      }
-    })
+    const newTask = new Task()
+    task.addTaskAbove(newTask)
+    newTask.setBackgroundColor()
+
+    setTimeout(() => new TaskPrompt(newTask, true), 5)
   })
 
   bottomButton.addEventListener('click', () => {
-    PromptForTaskName(ret => {
-      if (ret.valid) {
-        const newTask = new Task(ret.trimmed)
-        task.addTaskBelow(newTask)
-        newTask.setBackgroundColor()
-      }
-    })
+    const newTask = new Task()
+    task.addTaskBelow(newTask)
+    newTask.setBackgroundColor()
+
+    setTimeout(() => new TaskPrompt(newTask, true), 5)
   })
 
   rightButton.addEventListener('click', () => {
-    PromptForTaskName(ret => {
-      if (ret.valid) {
-        const newTask = new Task(ret.trimmed)
-        task.addTask(newTask)
-        newTask.setBackgroundColor()
-      }
-    })
+    const newTask = new Task()
+    task.addTask(newTask)
+    newTask.setBackgroundColor()
+
+    setTimeout(() => new TaskPrompt(newTask, true), 5)
   })
 
   const spanBounds = task.dom.span.getBoundingClientRect()
 
   topButton.style.left = '10px'
   topButton.style.top = `${-buttonDistanceConstant}px`
+  topButton.style.userSelect = 'none'
 
   bottomButton.style.left = '10px'
   bottomButton.style.bottom = `${-buttonDistanceConstant}px`
+  bottomButton.style.userSelect = 'none'
 
   const rightBounds = rightButton.getBoundingClientRect()
   rightButton.style.left = `${spanBounds.width + 5}px`
   rightButton.style.top = `${spanBounds.height / 2 - rightBounds.height / 2}px`
+  rightButton.style.userSelect = 'none'
 
   taskToButtonsMap.set(task, {
     topButton, bottomButton, rightButton,
@@ -159,7 +156,7 @@ class Task {
    * @param {string} name 
    * @param {{ backgroundColor: string; }} [style={ backgroundColor: Task.DefaultBackgroundColor }] 
    */
-  constructor(name, style = { backgroundColor: Task.DefaultBackgroundColor }) {
+  constructor(name = 'New task', style = { backgroundColor: Task.DefaultBackgroundColor }) {
     this.name = name
 
     this.builtDom = false
