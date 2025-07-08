@@ -15,7 +15,8 @@ class ContextMenuLine {
    *   'icon-triangle-up' |
    *   'icon-triangle-right' |
    *   'icon-inbox' |
-   *   'icon-outbox'
+   *   'icon-outbox' |
+   *   'icon-notepad'
    * } icon 
    */
   constructor(text, callback, icon) {
@@ -203,7 +204,7 @@ class ContextMenu {
       new ContextMenuLine('Rename', () => {
         new TaskPrompt(task)
         menu.destroy()
-      }, 'icon-pen'),
+      }, 'icon-pencil'),
       new ContextMenuLine('Change color', () => {
         PromptForColor(ret => {
           task.setBackgroundColor(ret.picked)
@@ -233,7 +234,7 @@ class ContextMenu {
       new ContextMenuLine('Rename', () => {
         new TaskPrompt(task)
         menu.destroy()
-      }, 'icon-pen'),
+      }, 'icon-pencil'),
       new ContextMenuLine('Change color', () => {
         PromptForColor(ret => {
           task.setBackgroundColor(ret.picked)

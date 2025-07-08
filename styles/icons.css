@@ -89,3 +89,7 @@ i.icon-inbox::before {
 i.icon-outbox::before {
   content: '📤';
 }
+
+i.icon-notepad::before {
+  content: '📝';
+}
