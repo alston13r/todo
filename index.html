@@ -9,7 +9,7 @@
 
   <title>Todo</title>
 
-  <link rel='stylesheet' href='./styles/aligning.css'>
+  <!-- <link rel='stylesheet' href='./styles/aligning.css'>
   <link rel='stylesheet' href='./styles/button.css'>
   <link rel='stylesheet' href='./styles/color-picker.css'>
   <link rel='stylesheet' href='./styles/icons.css'>
@@ -28,17 +28,115 @@
   <script src='./scripts/Prompting.js'></script>
   <script src='./scripts/Task.js'></script>
 
-  <script defer src='./scripts/Main.js'></script>
+  <script defer src='./scripts/Main.js'></script> -->
+
+  <style>
+    html,
+    body {
+      margin: 0;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    body {
+      font-family: arial;
+    }
+
+    .horizontal,
+    .vertical {
+      display: flex;
+    }
+
+    .horizontal {
+      flex-direction: row;
+    }
+
+    .vertical {
+      flex-direction: column;
+    }
+
+    .horizontal.justify,
+    .vertical.justify {
+      justify-content: center;
+    }
+
+    .red {
+      background-color: red;
+    }
+
+    .blue {
+      background-color: blue;
+    }
+
+    .coral {
+      background-color: coral;
+    }
+
+    .cornflower {
+      background-color: cornflowerblue;
+    }
+
+    .green {
+      background-color: green;
+    }
+
+    .pink {
+      background-color: pink;
+    }
+
+    .yellow {
+      background-color: yellow;
+    }
+
+    .box {
+      width: 20px;
+      height: 20px;
+    }
+
+    .box.wide {
+      width: 100px;
+    }
+
+    .truncate-text {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  </style>
 
 </head>
 
 <body>
 
-  <div class='horizontal center'>
+  <div class='horizontal justify'>
+
+    <div class='vertical'>
+
+      <div class='box green' style='width: 100px;'>
+        <div class='truncate-text'>Super duaaaa long string of text</div>
+      </div>
+
+      <div class='box red'></div>
+      <div class='box blue'></div>
+      <div class='box coral'></div>
+
+    </div>
+
+    <div class='vertical'>
+
+      <div class='box cornflower wide'></div>
+      <div class='box coral wide'></div>
+
+    </div>
+
+  </div>
+
+
+  <!-- <div class='horizontal center'>
     <ul class='root'>
 
     </ul>
-  </div>
+  </div> -->
 
 </body>
 
