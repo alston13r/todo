@@ -592,15 +592,13 @@ function addCreateButtonToRoot() {
   root.appendChild(button)
 
   button.addEventListener('click', () => {
-    PromptForTaskName(ret => {
-      if (ret.valid) {
-        const newTask = new Task(ret.trimmed)
-        addTaskToRoot(newTask)
-        newTask.setBackgroundColor()
-        button.remove()
-        TaskIO.Save()
-      }
-    })
+    const newTask = new Task()
+    addTaskToRoot(newTask)
+    newTask.setBackgroundColor()
+
+    setTimeout(() => new TaskPrompt(newTask, true), 5)
+
+    button.remove()
   })
 }
 
