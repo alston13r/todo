@@ -1,0 +1,211 @@
+class TextParser {
+  /** @type {number} */
+  static _TAB_LENGTH = 4
+  /** @type {number} */
+  static _SPACE_LENGTH = 1
+
+  /**
+   * @param {string} text 
+   * 
+   * @returns {Project[]}
+   */
+  static ParseFullText(text) {
+    const groupSplit = text.split(/(?:\r?\n)?###/)
+    groupSplit.shift()
+
+    const groups = []
+
+    for (const groupText of groupSplit) {
+      const project = TextParser._ParseProjectText(groupText)
+      if (project === null) continue
+
+      const group = new Project(project.name)
+
+      function descend(parent) {
+        const info = parent.info
+        const type = info.type
+
+        let item = null
+        if (type === 'TASK') {
+          item = new Task(info.name, info.status)
+          if ('date' in info) {
+            item.setDate(info.date)
+          }
+        } else if (type === 'SECTION') {
+          item = new Section(info.name)
+        }
+
+        if (item === null) return null
+
+        for (let child of parent.children) {
+          child = descend(child)
+          if (child !== null) item.addChild(child)
+        }
+
+        return item
+      }
+
+      for (let child of project.children) {
+        child = descend(child)
+        if (child !== null) group.addChild(child)
+      }
+
+      groups.push(group)
+    }
+
+    return groups
+  }
+
+  /**
+   * @param {string} text 
+   * 
+   * @returns {Project}
+   */
+  static _ParseProjectText(text) {
+    let lines = text.split(/\r?\n/)
+    const projectName = TextParser._ParseProjectTextName(lines.shift())
+
+    /** @type {{indentation: number, info: {type: string, name: string}}[]} */
+    const parsedLines = lines.filter(x => x.trim().length > 0).map(line => TextParser._ParseProjectTextLine(line))
+
+    const project = { name: projectName, indentation: -1, children: [] }
+
+    /** @type {{indentation: number, children: []}[]} */
+    const context = [project]
+
+    for (const line of parsedLines) {
+      line.children = []
+      for (let i = context.length - 1; i >= 0; i--) {
+        if (line.indentation <= context[i].indentation) {
+          context.pop()
+          continue
+        }
+        context[i].children.push(line)
+        context.push(line)
+        break
+      }
+    }
+
+    return project
+  }
+
+  /**
+   * @param {string} text 
+   * 
+   * @returns {string}
+   */
+  static _ParseProjectTextName(text) {
+    return text.trim()
+  }
+
+  /**
+   * @param {string} text 
+   * 
+   * @returns {number}
+   */
+  static _GetLineIndentation(text) {
+    if (text.trim().length === 0) return 0
+
+    let indentation = 0
+    for (const c of text) {
+      if (c === '\t') indentation += TextParser._TAB_LENGTH
+      else if (c === ' ') indentation += TextParser._SPACE_LENGTH
+      else break
+    }
+
+    return indentation
+  }
+
+  /**
+   * @param {string} text 
+   */
+  static _ParseProjectTextLine(text) {
+    // either a section or a task
+    const content = text.trim()
+    const indentation = TextParser._GetLineIndentation(text)
+    const info = TextParser._ParseProjectTextLineContent(content)
+    return info !== null ? { indentation, info } : null
+  }
+
+  /**
+   * @param {string} text 
+   * @returns {{type: 'TASK' | 'SECTION', name: string, status?: TaskStatusEnum, date?: Date}}
+   */
+  static _ParseProjectTextLineContent(text) {
+    text = text.trim()
+    if (text.length === 0) return null
+
+    if (text.charAt(0) === '[') {
+      // is a task
+      const taskInfo = TextParser._ParseTaskText(text)
+      if (taskInfo !== null) return { type: 'TASK', ...taskInfo }
+    }
+
+    else {
+      // is a section
+      const sectionName = TextParser._ParseSectionText(text)
+      if (sectionName !== null) return { type: 'SECTION', name: sectionName }
+    }
+
+    return null
+  }
+
+  /**
+   * @param {string} text
+   * @returns {string | null}
+   */
+  static _ParseSectionText(text) {
+    text = text.trim()
+    return text.length > 0 ? text : null
+  }
+
+  /**
+   * @param {string} text 
+   * @returns {{name: string, status: TaskStatusEnum, date?: Date} | null}
+   */
+  static _ParseTaskText(text) {
+    text = text.trim()
+    const statusText = text.match(/\[([^\]]*)\]/)?.[1]?.trim()
+    if (statusText === null || statusText === undefined) {
+      console.log(`bad task - '${text}'`)
+      return null
+    }
+
+    const status = TaskStatusEnum.Parse(statusText)
+
+    const taskInfoText = text.substring(text.indexOf(']') + 1).trim()
+    const parsedInfo = TextParser._ParseTaskInfoText(taskInfoText)
+
+    return parsedInfo !== null ? { status, ...parsedInfo } : null
+  }
+
+  /**
+   * @param {string} text 
+   */
+  static _ParseTaskInfoText(text) {
+    const split = text.split(',').map(x => x.trim()).filter(x => x.length > 0)
+
+    let name = [split.shift().trim()]
+
+    const info = {}
+
+    while (split.length > 0) {
+      const item = split.shift()
+      const date = new Date(item)
+      if (date.toString() === 'Invalid Date') {
+        name.push(item)
+      } else {
+        info.date = date
+        break
+      }
+    }
+
+    if (split.length > 0) {
+      console.log('unexpected items', split)
+    }
+
+    info.name = name.join(', ')
+
+    return info
+  }
+}
