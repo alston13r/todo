@@ -145,13 +145,16 @@ class Task extends Item {
   /**
    * @param {number} indentation
    * 
-   * @returns {string} [STATUS] TASK NAME, DATE \n --- DESCRIPTION
+   * @returns {string} [STATUS] TASK NAME, DATE, [EXPANDED] \n --- DESCRIPTION
    */
   toString(indentation = 0) {
     const status = this.status.getShorthand()
     const name = this.name
     const hasDate = this.hasDate()
-    return `[${status}] ${name}` + (hasDate ? `, ${this.getDateString()}` : '') + (this.hasDescription() ? TaskWriter._EOL_SEQUENCE + this._prepareDescriptionForWrite(indentation) : '')
+    return `[${status}] ${name}` +
+      (hasDate ? `, ${this.getDateString()}` : '') +
+      (this.expanded === false ? ', [>]' : '') +
+      (this.hasDescription() ? TaskWriter._EOL_SEQUENCE + this._prepareDescriptionForWrite(indentation) : '')
   }
 }
 
@@ -167,10 +170,12 @@ class Section extends Item {
   }
 
   /**
-   * @returns {string} SECTION NAME \n --- DESCRIPTION
+   * @returns {string} SECTION NAME, [EXPANDED] \n --- DESCRIPTION
    */
   toString(indentation = 0) {
-    return this.name + (this.hasDescription() ? TaskWriter._EOL_SEQUENCE + this._prepareDescriptionForWrite(indentation) : '')
+    return this.name +
+      (this.expanded === false ? ', [>]' : '') +
+      (this.hasDescription() ? TaskWriter._EOL_SEQUENCE + this._prepareDescriptionForWrite(indentation) : '')
   }
 }
 

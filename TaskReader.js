@@ -33,8 +33,14 @@ class TaskReader {
           if ('date' in info) {
             item.setDate(info.date)
           }
+          if ('dropdown' in info) {
+            item.setExpanded(info.dropdown)
+          }
         } else if (type === 'SECTION') {
           item = new Section(info.name)
+          if ('dropdown' in info) {
+            item.setExpanded(info.dropdown)
+          }
         } else {
           return info.descriptionText
         }
@@ -46,7 +52,7 @@ class TaskReader {
           if (typeof child === 'string') {
             item.addDescriptionLine(child)
           } else {
-            if (child !== null) item.addChild(child)
+            if (child !== null) item.addChild(child, false)
           }
         }
 
@@ -58,7 +64,7 @@ class TaskReader {
         if (typeof child === 'string') {
           project.addDescriptionLine(child)
         } else {
-          if (child !== null) project.addChild(child)
+          if (child !== null) project.addChild(child, false)
         }
       }
 
@@ -163,8 +169,8 @@ class TaskReader {
 
     else {
       // is a section
-      const sectionName = TaskReader._ParseSectionText(text)
-      if (sectionName !== null) return { type: 'SECTION', name: sectionName }
+      const sectionInfo = TaskReader._ParseSectionText(text)
+      if (sectionInfo !== null) return { type: 'SECTION', ...sectionInfo }
     }
 
     return null
@@ -175,8 +181,32 @@ class TaskReader {
    * @returns {string | null}
    */
   static _ParseSectionText(text) {
-    text = text.trim()
-    return text.length > 0 ? text : null
+    const split = text.split(',').map(x => x.trim())
+
+    if (split.length === 0) return null
+
+    const name = []
+    const info = {}
+
+    while (split.length > 0) {
+      const infoItem = split.shift()
+
+      // const date = TaskReader._TryDate(infoItem)
+      // if (date !== null) {
+      //   info.date = date
+      //   continue
+      // }
+
+      const dropdown = TaskReader._TryDropdownInfo(infoItem)
+      if (dropdown !== null) {
+        info.dropdown = dropdown
+        continue
+      }
+
+      name.push(infoItem)
+    }
+
+    return { name: name.join(', '), ...info }
   }
 
   /**
@@ -211,14 +241,21 @@ class TaskReader {
     const info = {}
 
     while (split.length > 0) {
-      const item = split.shift()
-      const date = new Date(item)
-      if (date.toString() === 'Invalid Date') {
-        name.push(item)
-      } else {
+      const infoItem = split.shift()
+
+      const date = TaskReader._TryDate(infoItem)
+      if (date !== null) {
         info.date = date
-        break
+        continue
       }
+
+      const dropdown = TaskReader._TryDropdownInfo(infoItem)
+      if (dropdown !== null) {
+        info.dropdown = dropdown
+        continue
+      }
+
+      name.push(infoItem)
     }
 
     if (split.length > 0) {
@@ -228,5 +265,35 @@ class TaskReader {
     info.name = name.join(', ')
 
     return info
+  }
+
+  /**
+   * @param {string} text 
+   * 
+   * @returns {Date | null}
+   */
+  static _TryDate(text) {
+    const date = new Date(text)
+    return (date.toString() !== 'Invalid Date') ? date : null
+  }
+
+  /**
+   * @param {string} text 
+   * 
+   * @returns {boolean | null}
+   */
+  static _TryDropdownInfo(text) {
+    const m = text.match(/^\s*\[(.)\]\s*$/)
+    if (m === null) return null
+
+    switch (m[1].toLowerCase()) {
+      case '>':
+        return false
+
+      case 'v':
+        return true
+    }
+
+    return true
   }
 }
