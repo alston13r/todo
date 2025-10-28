@@ -3,6 +3,8 @@ class TaskReader {
   static _TAB_LENGTH = 4
   /** @type {number} */
   static _SPACE_LENGTH = 1
+  /** @type {string} */
+  static _DESCRIPTION_STRING = '--'
 
   /**
    * @param {string} text 
@@ -10,16 +12,16 @@ class TaskReader {
    * @returns {Project[]}
    */
   static ParseFullText(text) {
-    const groupSplit = text.split(/(?:\r?\n)?###/)
-    groupSplit.shift()
+    const projectTextSplit = text.split(/(?:\r?\n)?###/)
+    projectTextSplit.shift()
 
-    const groups = []
+    const projects = []
 
-    for (const groupText of groupSplit) {
-      const project = TaskReader._ParseProjectText(groupText)
-      if (project === null) continue
+    for (const projectText of projectTextSplit) {
+      const parsedProject = TaskReader._ParseProjectText(projectText)
+      if (parsedProject === null) continue
 
-      const group = new Project(project.name)
+      const project = new Project(parsedProject.name)
 
       function descend(parent) {
         const info = parent.info
@@ -33,27 +35,37 @@ class TaskReader {
           }
         } else if (type === 'SECTION') {
           item = new Section(info.name)
+        } else {
+          return info.descriptionText
         }
 
         if (item === null) return null
 
         for (let child of parent.children) {
           child = descend(child)
-          if (child !== null) item.addChild(child)
+          if (typeof child === 'string') {
+            item.addDescriptionLine(child)
+          } else {
+            if (child !== null) item.addChild(child)
+          }
         }
 
         return item
       }
 
-      for (let child of project.children) {
+      for (let child of parsedProject.children) {
         child = descend(child)
-        if (child !== null) group.addChild(child)
+        if (typeof child === 'string') {
+          project.addDescriptionLine(child)
+        } else {
+          if (child !== null) project.addChild(child)
+        }
       }
 
-      groups.push(group)
+      projects.push(project)
     }
 
-    return groups
+    return projects
   }
 
   /**
@@ -65,7 +77,7 @@ class TaskReader {
     let lines = text.split(/\r?\n/)
     const projectName = TaskReader._ParseProjectTextName(lines.shift())
 
-    /** @type {{indentation: number, info: {type: string, name: string}}[]} */
+    /** @type {{indentation: number, info: {type: string}}[]} */
     const parsedLines = lines.filter(x => x.trim().length > 0)
       .map(line => TaskReader._ParseProjectTextLine(line))
       .filter(line => line !== null)
@@ -131,13 +143,19 @@ class TaskReader {
 
   /**
    * @param {string} text 
-   * @returns {{type: 'TASK' | 'SECTION', name: string, status?: TaskStatusEnum, date?: Date}}
+   * @returns {{type: 'TASK' | 'SECTION' | 'DESCRIPTION', name?: string, status?: TaskStatusEnum, date?: Date, descriptionText?: string}}
    */
   static _ParseProjectTextLineContent(text) {
-    text = text.trim()
+    text = text.trimStart()
     if (text.length === 0) return null
 
-    if (text.charAt(0) === '[') {
+    if (text.startsWith(TaskReader._DESCRIPTION_STRING)) {
+      // is a description
+      const descriptionText = text.substring(TaskReader._DESCRIPTION_STRING.length + 1)
+      return { type: 'DESCRIPTION', descriptionText }
+    }
+
+    else if (text.charAt(0) === '[') {
       // is a task
       const taskInfo = TaskReader._ParseTaskText(text)
       if (taskInfo !== null) return { type: 'TASK', ...taskInfo }
