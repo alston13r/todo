@@ -5,6 +5,8 @@ class Item {
   children = []
   /** @type {Item} */
   parent = null
+  /** @type {boolean} */
+  expanded = true
 
   /** @type {boolean} */
   _isItem = true
@@ -19,12 +21,14 @@ class Item {
 
   /**
    * @param {Item} item 
+   * @param {boolean} autoExpand
    */
-  addChild(item) {
+  addChild(item, autoExpand = true) {
     if (item._isItem !== true) throw Error('child must be an Item')
     item.removeFromParent()
     this.children.push(item)
     item.parent = this
+    if (autoExpand === true) this.setExpanded(true)
   }
 
   removeFromParent() {
@@ -32,6 +36,14 @@ class Item {
     const index = this.parent.children.indexOf(this)
     if (index >= 0) this.parent.children.splice(index, 1)
     this.parent = null
+  }
+
+  /**
+   * @param {boolean} expanded 
+   */
+  setExpanded(expanded) {
+    if (typeof expanded !== 'boolean') throw Error('expanded value must be a boolean')
+    this.expanded = expanded
   }
 }
 
