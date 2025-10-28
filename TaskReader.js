@@ -1,4 +1,4 @@
-class TextParser {
+class TaskReader {
   /** @type {number} */
   static _TAB_LENGTH = 4
   /** @type {number} */
@@ -16,7 +16,7 @@ class TextParser {
     const groups = []
 
     for (const groupText of groupSplit) {
-      const project = TextParser._ParseProjectText(groupText)
+      const project = TaskReader._ParseProjectText(groupText)
       if (project === null) continue
 
       const group = new Project(project.name)
@@ -63,10 +63,12 @@ class TextParser {
    */
   static _ParseProjectText(text) {
     let lines = text.split(/\r?\n/)
-    const projectName = TextParser._ParseProjectTextName(lines.shift())
+    const projectName = TaskReader._ParseProjectTextName(lines.shift())
 
     /** @type {{indentation: number, info: {type: string, name: string}}[]} */
-    const parsedLines = lines.filter(x => x.trim().length > 0).map(line => TextParser._ParseProjectTextLine(line))
+    const parsedLines = lines.filter(x => x.trim().length > 0)
+      .map(line => TaskReader._ParseProjectTextLine(line))
+      .filter(line => line !== null)
 
     const project = { name: projectName, indentation: -1, children: [] }
 
@@ -108,8 +110,8 @@ class TextParser {
 
     let indentation = 0
     for (const c of text) {
-      if (c === '\t') indentation += TextParser._TAB_LENGTH
-      else if (c === ' ') indentation += TextParser._SPACE_LENGTH
+      if (c === '\t') indentation += TaskReader._TAB_LENGTH
+      else if (c === ' ') indentation += TaskReader._SPACE_LENGTH
       else break
     }
 
@@ -122,8 +124,8 @@ class TextParser {
   static _ParseProjectTextLine(text) {
     // either a section or a task
     const content = text.trim()
-    const indentation = TextParser._GetLineIndentation(text)
-    const info = TextParser._ParseProjectTextLineContent(content)
+    const indentation = TaskReader._GetLineIndentation(text)
+    const info = TaskReader._ParseProjectTextLineContent(content)
     return info !== null ? { indentation, info } : null
   }
 
@@ -137,13 +139,13 @@ class TextParser {
 
     if (text.charAt(0) === '[') {
       // is a task
-      const taskInfo = TextParser._ParseTaskText(text)
+      const taskInfo = TaskReader._ParseTaskText(text)
       if (taskInfo !== null) return { type: 'TASK', ...taskInfo }
     }
 
     else {
       // is a section
-      const sectionName = TextParser._ParseSectionText(text)
+      const sectionName = TaskReader._ParseSectionText(text)
       if (sectionName !== null) return { type: 'SECTION', name: sectionName }
     }
 
@@ -174,7 +176,7 @@ class TextParser {
     const status = TaskStatusEnum.Parse(statusText)
 
     const taskInfoText = text.substring(text.indexOf(']') + 1).trim()
-    const parsedInfo = TextParser._ParseTaskInfoText(taskInfoText)
+    const parsedInfo = TaskReader._ParseTaskInfoText(taskInfoText)
 
     return parsedInfo !== null ? { status, ...parsedInfo } : null
   }
@@ -184,6 +186,7 @@ class TextParser {
    */
   static _ParseTaskInfoText(text) {
     const split = text.split(',').map(x => x.trim()).filter(x => x.length > 0)
+    if (split.length === 0) return null
 
     let name = [split.shift().trim()]
 
