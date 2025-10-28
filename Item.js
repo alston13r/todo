@@ -93,6 +93,27 @@ class Item {
       )
       .join(TaskWriter._EOL_SEQUENCE)
   }
+
+  /**
+   * @returns {Task[]}
+   */
+  _getTasks() {
+    return this.children.filter(child => child._isTask)
+  }
+
+  /**
+   * @returns {number}
+   */
+  getNumberOfTasks() {
+    return this._getTasks().length
+  }
+
+  /**
+   * @returns {number}
+   */
+  getNumberOfCompletedTasks() {
+    return this._getTasks().filter(task => task.status === TaskStatusEnum.COMPLETE)
+  }
 }
 
 class Task extends Item {
