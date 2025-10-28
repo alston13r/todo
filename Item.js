@@ -7,6 +7,8 @@ class Item {
   parent = null
   /** @type {boolean} */
   expanded = true
+  /** @type {string} */
+  description = ''
 
   /** @type {boolean} */
   _isItem = true
@@ -44,6 +46,28 @@ class Item {
   setExpanded(expanded) {
     if (typeof expanded !== 'boolean') throw Error('expanded value must be a boolean')
     this.expanded = expanded
+  }
+
+  /**
+   * @returns {string}
+   */
+  getDescription() {
+    return this.description
+  }
+
+  /**
+   * @param {string} description 
+   */
+  setDescription(description) {
+    this.description = description
+  }
+
+  /**
+   * @param {string} description 
+   */
+  addDescriptionLine(description) {
+    if (this.description.length === 0) this.description = description
+    else this.description += '\n' + description
   }
 }
 
