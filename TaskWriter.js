@@ -17,7 +17,7 @@ class TaskWriter {
      * @param {number} indentation 
      */
     function descend(item, indentation = 0) {
-      const str = item.toString()
+      const str = item.toString(indentation)
       res.push(TaskWriter._INDENTATION_STRING.repeat(indentation) + str)
       for (const child of item.children) descend(child, indentation + 1)
     }
