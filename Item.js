@@ -67,7 +67,31 @@ class Item {
    */
   addDescriptionLine(description) {
     if (this.description.length === 0) this.description = description
-    else this.description += '\n' + description
+    else this.description += TaskWriter._EOL_SEQUENCE + description
+  }
+
+  /**
+   * @returns {boolean}
+   */
+  hasDescription() {
+    return this.description.length > 0
+  }
+
+  /**
+   * @param {number} indentation 
+   */
+  _prepareDescriptionForWrite(indentation = 0) {
+    if (!this.hasDescription()) return null
+
+    return this.getDescription()
+      .split(/\r?\n/)
+      .map(line =>
+        TaskWriter._INDENTATION_STRING.repeat(indentation + 1) +
+        TaskReader._DESCRIPTION_STRING +
+        ' ' +
+        line
+      )
+      .join(TaskWriter._EOL_SEQUENCE)
   }
 }
 
@@ -119,13 +143,15 @@ class Task extends Item {
   }
 
   /**
-   * @returns {string} [STATUS] TASK NAME, DATE
+   * @param {number} indentation
+   * 
+   * @returns {string} [STATUS] TASK NAME, DATE \n --- DESCRIPTION
    */
-  toString() {
+  toString(indentation = 0) {
     const status = this.status.getShorthand()
     const name = this.name
     const hasDate = this.hasDate()
-    return `[${status}] ${name}` + (hasDate ? `, ${this.getDateString()}` : '')
+    return `[${status}] ${name}` + (hasDate ? `, ${this.getDateString()}` : '') + (this.hasDescription() ? TaskWriter._EOL_SEQUENCE + this._prepareDescriptionForWrite(indentation) : '')
   }
 }
 
@@ -141,10 +167,10 @@ class Section extends Item {
   }
 
   /**
-   * @returns {string} SECTION NAME
+   * @returns {string} SECTION NAME \n --- DESCRIPTION
    */
-  toString() {
-    return this.name
+  toString(indentation = 0) {
+    return this.name + (this.hasDescription() ? TaskWriter._EOL_SEQUENCE + this._prepareDescriptionForWrite(indentation) : '')
   }
 }
 
@@ -162,7 +188,7 @@ class Project extends Item {
   /**
    * @returns {string} ### PROJECT NAME
    */
-  toString() {
-    return '### ' + this.name
+  toString(indentation = 0) {
+    return '### ' + this.name + (this.hasDescription() ? TaskWriter._EOL_SEQUENCE + this._prepareDescriptionForWrite(indentation - 1) : '')
   }
 }
