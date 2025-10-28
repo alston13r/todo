@@ -7,12 +7,9 @@ function readInput() {
   if (!inputElement) throw Error('could not find input element')
 
   const rawText = inputElement.value
-  const projects = TextParser.ParseFullText(rawText)
+  const projects = TaskReader.ParseFullText(rawText)
 
   data = projects
-
-  const descended = projects.map(project => descendProject(project))
-  console.log(descended)
 }
 
 function writeData() {
@@ -22,6 +19,6 @@ function writeData() {
   const inputElement = document.querySelector('#mainInput')
   if (!inputElement) throw Error('could not find input element')
 
-  const fullText = data.map(project => descendProject(project))
-  inputElement.value = fullText.join(EOL_SEQUENCE)
+  const fullText = TaskWriter.ProjectsToString(data)
+  inputElement.value = fullText
 }
