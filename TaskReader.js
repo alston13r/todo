@@ -4,7 +4,7 @@ class TaskReader {
   /** @type {number} */
   static _SPACE_LENGTH = 1
   /** @type {string} */
-  static _DESCRIPTION_STRING = '--'
+  static _DESCRIPTION_STRING = '---'
 
   /**
    * @param {string} text 
