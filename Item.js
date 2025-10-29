@@ -8,7 +8,7 @@ class Item {
   /** @type {boolean} */
   expanded = true
   /** @type {string} */
-  description = ''
+  _description = ''
 
   /** @type {boolean} */
   _isItem = true
@@ -41,40 +41,44 @@ class Item {
   }
 
   /**
-   * @param {boolean} expanded 
+   * @param {boolean} expand 
+   * @param {boolean} ascend
    */
-  setExpanded(expanded) {
-    if (typeof expanded !== 'boolean') throw Error('expanded value must be a boolean')
-    this.expanded = expanded
+  setExpanded(expand, ascend = false) {
+    if (typeof expand !== 'boolean') throw Error('expanded value must be a boolean')
+    this.expanded = expand
+    if (ascend === true) this.parent?.setExpanded(expand, ascend)
   }
 
   /**
    * @returns {string}
    */
   getDescription() {
-    return this.description
+    return (this._description !== null) ? this._description : ''
   }
 
   /**
    * @param {string} description 
    */
   setDescription(description) {
-    this.description = description
+    if (typeof description !== 'string') throw Error('description must be a string')
+    this._description = description
   }
 
   /**
    * @param {string} description 
    */
   addDescriptionLine(description) {
-    if (this.description.length === 0) this.description = description
-    else this.description += TaskWriter._EOL_SEQUENCE + description
+    if (typeof description !== 'string') throw Error('description must be a string')
+    if (this._description.length === 0) this._description = description
+    else this._description += TaskWriter._EOL_SEQUENCE + description
   }
 
   /**
    * @returns {boolean}
    */
   hasDescription() {
-    return this.description.length > 0
+    return this._description !== null && this._description.length > 0
   }
 
   /**
@@ -113,6 +117,20 @@ class Item {
    */
   getNumberOfCompletedTasks() {
     return this._getTasks().filter(task => task.status === TaskStatusEnum.COMPLETE)
+  }
+
+  /**
+   * @param {boolean} descend 
+   * @returns {{type: number, name: string, children: Item[], expanded: boolean, description: string}}
+   */
+  serialize(descend = false) {
+    return {
+      type: 0,
+      name: this.name,
+      description: this.getDescription(),
+      expanded: this.expanded,
+      children: (descend === true) ? this.children.map(child => child.serialize(descend)) : []
+    }
   }
 }
 
@@ -177,6 +195,17 @@ class Task extends Item {
       (this.expanded === false ? ', [>]' : '') +
       (this.hasDescription() ? TaskWriter._EOL_SEQUENCE + this._prepareDescriptionForWrite(indentation) : '')
   }
+
+  /**
+   * @param {boolean} descend 
+   * @returns {{type: number, name: string, children: Item[], expanded: boolean, description: string, status: string}}
+   */
+  serialize(descend = false) {
+    const ret = super.serialize(descend)
+    ret.type = 1
+    ret.status = this.status.getName()
+    return ret
+  }
 }
 
 class Section extends Item {
@@ -198,6 +227,16 @@ class Section extends Item {
       (this.expanded === false ? ', [>]' : '') +
       (this.hasDescription() ? TaskWriter._EOL_SEQUENCE + this._prepareDescriptionForWrite(indentation) : '')
   }
+
+  /**
+   * @param {boolean} descend 
+   * @returns {{type: number, name: string, children: Item[], expanded: boolean, description: string}}
+   */
+  serialize(descend = false) {
+    const ret = super.serialize(descend)
+    ret.type = 2
+    return ret
+  }
 }
 
 class Project extends Item {
@@ -216,5 +255,15 @@ class Project extends Item {
    */
   toString(indentation = 0) {
     return '### ' + this.name + (this.hasDescription() ? TaskWriter._EOL_SEQUENCE + this._prepareDescriptionForWrite(indentation - 1) : '')
+  }
+
+  /**
+   * @param {boolean} descend 
+   * @returns {{type: number, name: string, children: Item[], expanded: boolean, description: string}}
+   */
+  serialize(descend = false) {
+    const ret = super.serialize(descend)
+    ret.type = 3
+    return ret
   }
 }
