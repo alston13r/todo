@@ -3,6 +3,11 @@ class TaskStatusEnum {
   name = null
   /** @type {string} */
   shorthand = null
+  /** @type {number} */
+  _index = null
+
+  /** @type {number} */
+  static _Index = 0
 
   /**
    * @param {string} name 
@@ -13,6 +18,7 @@ class TaskStatusEnum {
     if (typeof shorthand !== 'string') throw Error('shorthand must be a string')
     this.name = name
     this.shorthand = shorthand
+    this._index = TaskStatusEnum._Index++
     Object.freeze(this)
   }
 
@@ -59,6 +65,29 @@ class TaskStatusEnum {
 
     console.log(`bad task status - '${text}', defaulting TODO`)
     return TaskStatusEnum.TODO
+  }
+
+  serialize() {
+    return {
+      name: this.getName(),
+      shorthand: this.getShorthand(),
+      index: this._index
+    }
+  }
+
+  static Serialize() {
+    const todo = TaskStatusEnum.TODO
+    const inProgress = TaskStatusEnum.IN_PROGRESS
+    const complete = TaskStatusEnum.COMPLETE
+
+    return {
+      arr: [
+        todo, inProgress, complete
+      ],
+      todo,
+      inProgress,
+      complete
+    }
   }
 }
 
